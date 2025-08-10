@@ -14,13 +14,230 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      events: {
+        Row: {
+          admin_id: string
+          background_image_url: string | null
+          created_at: string | null
+          date_time: string
+          description: string | null
+          id: string
+          location: string
+          template: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_id: string
+          background_image_url?: string | null
+          created_at?: string | null
+          date_time: string
+          description?: string | null
+          id?: string
+          location: string
+          template?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_id?: string
+          background_image_url?: string | null
+          created_at?: string | null
+          date_time?: string
+          description?: string | null
+          id?: string
+          location?: string
+          template?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      guestbook_entries: {
+        Row: {
+          created_at: string | null
+          event_id: string
+          id: string
+          invitee_id: string | null
+          message: string
+          name: string
+          photo_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id: string
+          id?: string
+          invitee_id?: string | null
+          message: string
+          name: string
+          photo_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          invitee_id?: string | null
+          message?: string
+          name?: string
+          photo_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guestbook_entries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guestbook_entries_invitee_id_fkey"
+            columns: ["invitee_id"]
+            isOneToOne: false
+            referencedRelation: "invitees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitees: {
+        Row: {
+          checked_in_at: string | null
+          created_at: string | null
+          email: string
+          event_id: string
+          id: string
+          is_checked_in: boolean | null
+          name: string
+          phone: string | null
+          qr_code_data: string | null
+          token: string
+          updated_at: string | null
+        }
+        Insert: {
+          checked_in_at?: string | null
+          created_at?: string | null
+          email: string
+          event_id: string
+          id?: string
+          is_checked_in?: boolean | null
+          name: string
+          phone?: string | null
+          qr_code_data?: string | null
+          token: string
+          updated_at?: string | null
+        }
+        Update: {
+          checked_in_at?: string | null
+          created_at?: string | null
+          email?: string
+          event_id?: string
+          id?: string
+          is_checked_in?: boolean | null
+          name?: string
+          phone?: string | null
+          qr_code_data?: string | null
+          token?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      rsvps: {
+        Row: {
+          created_at: string | null
+          dietary_restrictions: string | null
+          drink_preferences: Json | null
+          event_id: string
+          guest_count: number | null
+          id: string
+          invitee_id: string
+          responded_at: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dietary_restrictions?: string | null
+          drink_preferences?: Json | null
+          event_id: string
+          guest_count?: number | null
+          id?: string
+          invitee_id: string
+          responded_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dietary_restrictions?: string | null
+          drink_preferences?: Json | null
+          event_id?: string
+          guest_count?: number | null
+          id?: string
+          invitee_id?: string
+          responded_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rsvps_invitee_id_fkey"
+            columns: ["invitee_id"]
+            isOneToOne: true
+            referencedRelation: "invitees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_invitation_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
