@@ -4,27 +4,77 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon, ImageIcon, MapPin, Clock } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CalendarIcon, Upload, MapPin, Clock, ArrowLeft, Loader2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
+import { useCreateEvent } from "@/hooks/useEvents";
 
 const EventCreation = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const createEventMutation = useCreateEvent();
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     date: "",
     time: "",
     location: "",
-    backgroundImage: null as File | null,
+    template: "default",
+    background_image_url: "",
   });
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setFormData(prev => ({ ...prev, backgroundImage: file }));
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.title || !formData.location || !formData.date || !formData.time) {
+      toast({
+        title: "Erreur",
+        description: "Veuillez remplir tous les champs obligatoires",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const dateTime = new Date(`${formData.date}T${formData.time}`).toISOString();
+
+      const eventData = {
+        title: formData.title,
+        description: formData.description || undefined,
+        location: formData.location,
+        date_time: dateTime,
+        template: formData.template,
+        background_image_url: formData.background_image_url || undefined,
+      };
+
+      await createEventMutation.mutateAsync(eventData);
+
+      toast({
+        title: "Succès",
+        description: "Événement créé avec succès !",
+      });
+
+      navigate('/admin');
+    } catch (error) {
+      console.error('Error creating event:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de créer l'événement. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -40,208 +90,195 @@ const EventCreation = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Form */}
-          <div className="space-y-6">
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>Informations de Base</CardTitle>
-                <CardDescription>
-                  Les détails essentiels de votre événement
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Titre de l'événement *</Label>
-                  <Input 
-                    id="title"
-                    placeholder="Mariage de Marie & Paul"
-                    value={formData.title}
-                    onChange={(e) => handleInputChange("title", e.target.value)}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea 
-                    id="description"
-                    placeholder="Nous avons l'honneur de vous convier à célébrer notre union..."
-                    value={formData.description}
-                    onChange={(e) => handleInputChange("description", e.target.value)}
-                    className="min-h-[100px] resize-none"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalendarIcon className="w-5 h-5 text-accent" />
-                  Date et Heure
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit}>
+          <div className="grid lg:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle>Informations de Base</CardTitle>
+                  <CardDescription>Les détails essentiels de votre événement</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="date">Date *</Label>
+                    <Label htmlFor="title">Titre de l'événement *</Label>
                     <Input 
-                      id="date"
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => handleInputChange("date", e.target.value)}
+                      id="title"
+                      placeholder="Mariage de Marie & Paul"
+                      value={formData.title}
+                      onChange={(e) => handleInputChange("title", e.target.value)}
+                      required
                     />
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="time">Heure *</Label>
-                    <div className="relative">
-                      <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Label htmlFor="description">Description</Label>
+                    <Textarea 
+                      id="description"
+                      placeholder="Nous avons l'honneur de vous convier..."
+                      value={formData.description}
+                      onChange={(e) => handleInputChange("description", e.target.value)}
+                      className="min-h-[100px] resize-none"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <CalendarIcon className="w-5 h-5 text-accent" />
+                    Date et Heure
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="date">Date *</Label>
+                      <Input 
+                        id="date"
+                        type="date"
+                        value={formData.date}
+                        onChange={(e) => handleInputChange("date", e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="time">Heure *</Label>
                       <Input 
                         id="time"
                         type="time"
-                        className="pl-10"
                         value={formData.time}
                         onChange={(e) => handleInputChange("time", e.target.value)}
+                        required
                       />
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-accent" />
-                  Lieu
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Label htmlFor="location">Adresse du lieu *</Label>
-                  <Input 
-                    id="location"
-                    placeholder="Château de Versailles, Grande Galerie"
-                    value={formData.location}
-                    onChange={(e) => handleInputChange("location", e.target.value)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-accent" />
+                    Lieu
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <Label htmlFor="location">Adresse du lieu *</Label>
+                    <Input 
+                      id="location"
+                      placeholder="Château de Versailles, Grande Galerie"
+                      value={formData.location}
+                      onChange={(e) => handleInputChange("location", e.target.value)}
+                      required
+                    />
+                  </div>
+                </CardContent>
+              </Card>
 
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ImageIcon className="w-5 h-5 text-accent" />
-                  Image de Fond
-                </CardTitle>
-                <CardDescription>
-                  Une image qui représente votre événement (optionnel)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Input 
-                    id="background-image"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                  />
-                  {formData.backgroundImage && (
-                    <div className="text-sm text-muted-foreground">
-                      Fichier sélectionné: {formData.backgroundImage.name}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Upload className="w-5 h-5 text-accent" />
+                    Personnalisation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="background_image_url">URL de l'image de fond (optionnel)</Label>
+                    <Input 
+                      id="background_image_url"
+                      type="url"
+                      placeholder="https://exemple.com/image.jpg"
+                      value={formData.background_image_url}
+                      onChange={(e) => handleInputChange("background_image_url", e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="template">Modèle d'invitation</Label>
+                    <Select value={formData.template} onValueChange={(value) => handleInputChange('template', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choisissez un modèle" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="default">Classique</SelectItem>
+                        <SelectItem value="modern">Moderne</SelectItem>
+                        <SelectItem value="festive">Festif</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-          {/* Preview */}
-          <div className="space-y-6">
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>Aperçu de l'Invitation</CardTitle>
-                <CardDescription>
-                  Voici comment votre invitation apparaîtra aux invités
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="relative h-64 overflow-hidden rounded-b-lg">
-                  <div className="absolute inset-0 bg-gradient-hero"></div>
-                  <div className="absolute inset-0 flex items-center justify-center text-center px-6">
-                    <div>
-                      <h3 className="text-2xl font-bold text-white mb-2">
-                        {formData.title || "Titre de votre événement"}
-                      </h3>
-                      <div className="flex flex-col gap-2 text-white/90 text-sm">
-                        {formData.date && (
-                          <div className="flex items-center justify-center gap-2">
-                            <CalendarIcon className="w-4 h-4" />
-                            <span>{new Date(formData.date).toLocaleDateString('fr-FR')}</span>
-                          </div>
-                        )}
-                        {formData.time && (
-                          <div className="flex items-center justify-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            <span>{formData.time}</span>
-                          </div>
-                        )}
-                        {formData.location && (
-                          <div className="flex items-center justify-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            <span className="text-xs">{formData.location}</span>
-                          </div>
-                        )}
+            <div className="space-y-6">
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle>Aperçu de l'Invitation</CardTitle>
+                  <CardDescription>Prévisualisation avec vos données</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="relative h-64 overflow-hidden rounded-b-lg">
+                    <div className="absolute inset-0 bg-gradient-hero"></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-center px-6">
+                      <div>
+                        <h3 className="text-2xl font-bold text-white mb-2">
+                          {formData.title || "Titre de votre événement"}
+                        </h3>
+                        <div className="flex flex-col gap-2 text-white/90 text-sm">
+                          {formData.date && (
+                            <div className="flex items-center justify-center gap-2">
+                              <CalendarIcon className="w-4 h-4" />
+                              <span>{new Date(formData.date).toLocaleDateString('fr-FR')}</span>
+                            </div>
+                          )}
+                          {formData.time && (
+                            <div className="flex items-center justify-center gap-2">
+                              <Clock className="w-4 h-4" />
+                              <span>{formData.time}</span>
+                            </div>
+                          )}
+                          {formData.location && (
+                            <div className="flex items-center justify-center gap-2">
+                              <MapPin className="w-4 h-4" />
+                              <span className="text-xs">{formData.location}</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>Templates d'Invitation</CardTitle>
-                <CardDescription>
-                  Choisissez un style pour vos invitations
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="border rounded-lg p-3 cursor-pointer hover:border-accent transition-smooth">
-                    <div className="h-20 bg-gradient-primary rounded mb-2"></div>
-                    <p className="text-xs text-center">Élégant</p>
-                  </div>
-                  <div className="border rounded-lg p-3 cursor-pointer hover:border-accent transition-smooth">
-                    <div className="h-20 bg-gradient-secondary rounded mb-2"></div>
-                    <p className="text-xs text-center">Moderne</p>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Plus de templates seront disponibles une fois Supabase connecté.
-                </p>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-end mt-8">
-          <Button variant="outline" size="lg">
-            Enregistrer comme Brouillon
-          </Button>
-          <Button variant="premium" size="lg" disabled>
-            Créer l'Événement
-          </Button>
-        </div>
-
-        <div className="bg-muted/50 rounded-lg p-4 mt-6">
-          <p className="text-sm text-muted-foreground text-center">
-            <strong>Note:</strong> La création d'événements nécessite une connexion à Supabase 
-            pour la sauvegarde et la gestion des données.
-          </p>
-        </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-end mt-8">
+            <Button 
+              type="button"
+              variant="outline" 
+              size="lg"
+              asChild
+              disabled={isLoading}
+            >
+              <Link to="/admin">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Annuler
+              </Link>
+            </Button>
+            <Button 
+              type="submit"
+              size="lg" 
+              className="bg-gradient-primary hover:shadow-gold transition-smooth"
+              disabled={isLoading}
+            >
+              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Créer l'Événement
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
