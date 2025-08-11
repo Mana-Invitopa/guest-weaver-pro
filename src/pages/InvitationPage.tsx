@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,22 +9,53 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, MapPin, Clock, Users, Camera, Heart } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useInviteeByToken } from "@/hooks/useInvitees";
+import QRCodeGenerator from "@/components/QRCodeGenerator";
 
 const InvitationPage = () => {
+  const { token } = useParams();
+  const { toast } = useToast();
+  const { data: invitationData, isLoading, error } = useInviteeByToken(token || '');
+  
   const [guestCount, setGuestCount] = useState(1);
   const [drinks, setDrinks] = useState<string[]>([]);
   const [customDrink, setCustomDrink] = useState("");
+  const [rsvpStatus, setRsvpStatus] = useState<'yes' | 'no' | 'pending'>('pending');
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
 
-  // Mock event data - will come from URL params and database
-  const event = {
-    id: "sample-event",
-    title: "Mariage de Marie & Paul",
-    date: "15 Mars 2024",
-    time: "18h00",
-    location: "Château de Versailles, Grande Galerie",
-    description: "Nous avons l'honneur de vous convier à célébrer notre union dans un cadre exceptionnel. Venez partager ce moment magique avec nous!",
-    backgroundImage: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800&h=600&fit=crop"
-  };
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-accent border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Chargement de l'invitation...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !invitationData || !token) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="text-center p-8">
+            <h1 className="text-2xl font-bold mb-4">Invitation non trouvée</h1>
+            <p className="text-muted-foreground mb-4">
+              Cette invitation n'existe pas ou a expiré.
+            </p>
+            <Button asChild>
+              <a href="/">Retour à l'accueil</a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const event = invitationData.events;
+  const invitee = invitationData;
 
   const drinkOptions = [
     "Champagne", "Vin Rouge", "Vin Blanc", "Cocktail", 
@@ -42,12 +74,16 @@ const InvitationPage = () => {
     <div className="min-h-screen bg-gradient-subtle">
       {/* Hero Section with Event Details */}
       <div className="relative h-96 overflow-hidden">
-        <img 
-          src={event.backgroundImage} 
-          alt={event.title}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-primary/70"></div>
+        {event.background_image_url ? (
+          <img 
+            src={event.background_image_url} 
+            alt={event.title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-hero"></div>
+        )}
+        <div className="absolute inset-0 bg-black/50"></div>
         <div className="absolute inset-0 flex items-center justify-center text-center px-6">
           <div className="max-w-2xl">
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -56,11 +92,11 @@ const InvitationPage = () => {
             <div className="flex flex-wrap justify-center gap-6 text-white/90">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
-                <span>{event.date}</span>
+                <span>{new Date(event.date_time).toLocaleDateString('fr-FR')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5" />
-                <span>{event.time}</span>
+                <span>{new Date(event.date_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-5 h-5" />
@@ -83,7 +119,7 @@ const InvitationPage = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground leading-relaxed">
-                {event.description}
+                {event.description || "Nous avons l'honneur de vous convier à cet événement exceptionnel. Votre présence nous ferait grand plaisir !"}
               </p>
             </CardContent>
           </Card>
@@ -97,19 +133,37 @@ const InvitationPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div className="bg-accent/10 p-4 rounded-lg">
+                <p className="text-sm text-foreground">
+                  <strong>Bonjour {invitee.name},</strong><br/>
+                  Vous êtes invité(e) à cet événement.
+                </p>
+              </div>
+
               <div className="space-y-3">
                 <Label htmlFor="name">Votre nom complet *</Label>
-                <Input id="name" placeholder="Marie Dupont" />
+                <Input 
+                  id="name" 
+                  value={guestName || invitee.name}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  placeholder="Votre nom complet" 
+                />
               </div>
 
               <div className="space-y-3">
                 <Label htmlFor="email">Email *</Label>
-                <Input id="email" type="email" placeholder="marie@example.com" />
+                <Input 
+                  id="email" 
+                  type="email" 
+                  value={guestEmail || invitee.email}
+                  onChange={(e) => setGuestEmail(e.target.value)}
+                  placeholder="votre@email.com" 
+                />
               </div>
 
               <div className="space-y-3">
                 <Label>Confirmez-vous votre présence ? *</Label>
-                <RadioGroup defaultValue="yes">
+                <RadioGroup value={rsvpStatus} onValueChange={(value) => setRsvpStatus(value as 'yes' | 'no')}>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="yes" id="yes" />
                     <Label htmlFor="yes">Oui, je serai présent(e)</Label>
@@ -121,33 +175,35 @@ const InvitationPage = () => {
                 </RadioGroup>
               </div>
 
-              <div className="space-y-3">
-                <Label htmlFor="guests">Nombre d'accompagnants</Label>
-                <div className="flex items-center space-x-3">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setGuestCount(Math.max(0, guestCount - 1))}
-                  >
-                    -
-                  </Button>
-                  <span className="w-12 text-center font-medium">{guestCount}</span>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setGuestCount(guestCount + 1)}
-                  >
-                    +
-                  </Button>
+              {rsvpStatus === 'yes' && (
+                <div className="space-y-3">
+                  <Label htmlFor="guests">Nombre d'accompagnants</Label>
+                  <div className="flex items-center space-x-3">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setGuestCount(Math.max(0, guestCount - 1))}
+                    >
+                      -
+                    </Button>
+                    <span className="w-12 text-center font-medium">{guestCount}</span>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => setGuestCount(guestCount + 1)}
+                    >
+                      +
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Total: {guestCount + 1} personne{guestCount > 0 ? 's' : ''}
+                  </p>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Total: {guestCount + 1} personne{guestCount > 0 ? 's' : ''}
-                </p>
-              </div>
+              )}
 
               <Button className="w-full bg-gradient-primary hover:shadow-gold transition-smooth">
                 <Users className="w-4 h-4 mr-2" />
-                Confirmer ma Présence
+                {rsvpStatus === 'yes' ? 'Confirmer ma Présence' : 'Confirmer mon Absence'}
               </Button>
             </CardContent>
           </Card>
@@ -233,16 +289,14 @@ const InvitationPage = () => {
         </div>
 
         {/* QR Code Section */}
-        <Card className="mt-8 shadow-card">
-          <CardContent className="text-center py-8">
-            <div className="w-32 h-32 bg-muted rounded-lg mx-auto mb-4 flex items-center justify-center">
-              <span className="text-xs text-muted-foreground">QR Code</span>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Présentez ce QR code à l'entrée de l'événement
-            </p>
-          </CardContent>
-        </Card>
+        <div className="mt-8">
+          <QRCodeGenerator 
+            data={`${window.location.origin}/invitation/${token}`}
+            title="Votre QR Code Personnel"
+            description="Présentez ce code à l'entrée de l'événement"
+            size={200}
+          />
+        </div>
       </div>
     </div>
   );

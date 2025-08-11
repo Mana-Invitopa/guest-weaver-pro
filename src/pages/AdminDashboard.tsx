@@ -2,17 +2,46 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, Calendar, CheckCircle, XCircle, Clock, Plus, BarChart3 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Users, Calendar, CheckCircle, XCircle, Clock, Plus, BarChart3, QrCode, UserCheck } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import { useEvents } from "@/hooks/useEvents";
+import { useEvents, useEvent } from "@/hooks/useEvents";
+import { useInvitees } from "@/hooks/useInvitees";
 import { useAuth } from "@/contexts/AuthContext";
+import GuestManagement from "@/components/GuestManagement";
+import QRCodeGenerator from "@/components/QRCodeGenerator";
+import CheckInSystem from "@/components/CheckInSystem";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 const AdminDashboard = () => {
+  const { eventId } = useParams();
   const { user } = useAuth();
   const { data: events, isLoading: eventsLoading } = useEvents();
+  const { data: selectedEvent } = useEvent(eventId || '');
+  const { data: eventInvitees = [] } = useInvitees(eventId || '');
+
+  // If eventId is provided, show event detail view
+  if (eventId && selectedEvent) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle">
+        <Navbar />
+        <div className="container mx-auto px-4 py-8 max-w-6xl">
+          <Tabs defaultValue="guests" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="guests">Invités</TabsTrigger>
+              <TabsTrigger value="qrcode">QR Codes</TabsTrigger>
+              <TabsTrigger value="checkin">Check-in</TabsTrigger>
+              <TabsTrigger value="stats">Stats</TabsTrigger>
+            </TabsList>
+            <TabsContent value="guests"><GuestManagement eventId={eventId} /></TabsContent>
+            <TabsContent value="qrcode"><QRCodeGenerator data={`${window.location.origin}/invitation`} /></TabsContent>
+            <TabsContent value="checkin"><CheckInSystem eventId={eventId} /></TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    );
+  }
 
   // Calculate real stats from events data
   const stats = {

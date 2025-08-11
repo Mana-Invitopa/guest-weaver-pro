@@ -9,6 +9,7 @@ import { CalendarIcon, Upload, MapPin, Clock, ArrowLeft, Loader2 } from "lucide-
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
+import EventCoverUpload from "@/components/EventCoverUpload";
 import { useCreateEvent } from "@/hooks/useEvents";
 
 const EventCreation = () => {
@@ -177,6 +178,11 @@ const EventCreation = () => {
                 </CardContent>
               </Card>
 
+              <EventCoverUpload 
+                onImageUploaded={(url) => handleInputChange("background_image_url", url)}
+                currentImageUrl={formData.background_image_url}
+              />
+
               <Card className="shadow-card">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -185,17 +191,6 @@ const EventCreation = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="background_image_url">URL de l'image de fond (optionnel)</Label>
-                    <Input 
-                      id="background_image_url"
-                      type="url"
-                      placeholder="https://exemple.com/image.jpg"
-                      value={formData.background_image_url}
-                      onChange={(e) => handleInputChange("background_image_url", e.target.value)}
-                    />
-                  </div>
-                  
                   <div className="space-y-2">
                     <Label htmlFor="template">Modèle d'invitation</Label>
                     <Select value={formData.template} onValueChange={(value) => handleInputChange('template', value)}>
@@ -221,7 +216,16 @@ const EventCreation = () => {
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="relative h-64 overflow-hidden rounded-b-lg">
-                    <div className="absolute inset-0 bg-gradient-hero"></div>
+                    {formData.background_image_url ? (
+                      <img 
+                        src={formData.background_image_url} 
+                        alt="Aperçu couverture" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-gradient-hero"></div>
+                    )}
+                    <div className="absolute inset-0 bg-black/40"></div>
                     <div className="absolute inset-0 flex items-center justify-center text-center px-6">
                       <div>
                         <h3 className="text-2xl font-bold text-white mb-2">
