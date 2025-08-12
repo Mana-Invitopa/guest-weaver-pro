@@ -8,22 +8,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Clock, Users, Camera, Heart } from "lucide-react";
+import { Calendar, MapPin, Clock, Users, Camera, Heart, Utensils, Table, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useInviteeByToken } from "@/hooks/useInvitees";
+import { useCreateOrUpdateRSVP } from "@/hooks/useRSVP";
 import QRCodeGenerator from "@/components/QRCodeGenerator";
 
 const InvitationPage = () => {
   const { token } = useParams();
   const { toast } = useToast();
   const { data: invitationData, isLoading, error } = useInviteeByToken(token || '');
+  const createOrUpdateRSVPMutation = useCreateOrUpdateRSVP();
   
   const [guestCount, setGuestCount] = useState(1);
   const [drinks, setDrinks] = useState<string[]>([]);
   const [customDrink, setCustomDrink] = useState("");
+  const [dietaryRestrictions, setDietaryRestrictions] = useState("");
   const [rsvpStatus, setRsvpStatus] = useState<'yes' | 'no' | 'pending'>('pending');
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isLoading) {
     return (
@@ -41,6 +45,7 @@ const InvitationPage = () => {
       <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
         <Card className="max-w-md">
           <CardContent className="text-center p-8">
+            <AlertCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-4">Invitation non trouvée</h1>
             <p className="text-muted-foreground mb-4">
               Cette invitation n'existe pas ou a expiré.
@@ -57,9 +62,12 @@ const InvitationPage = () => {
   const event = invitationData.events;
   const invitee = invitationData;
 
+  // Check if invitation has expired
+  const isExpired = (invitee as any).invitation_expires_at && new Date((invitee as any).invitation_expires_at) < new Date();
+
   const drinkOptions = [
     "Champagne", "Vin Rouge", "Vin Blanc", "Cocktail", 
-    "Bière", "Jus de Fruits", "Eau", "Sans Alcool"
+    "Bière", "Jus de Fruits", "Eau", "Sans Alcool", "Café", "Thé"
   ];
 
   const handleDrinkChange = (drink: string, checked: boolean) => {
@@ -69,6 +77,69 @@ const InvitationPage = () => {
       setDrinks(drinks.filter(d => d !== drink));
     }
   };
+
+  const handleSubmitRSVP = async () => {
+    if (rsvpStatus === 'pending') {
+      toast({
+        title: "Erreur",
+        description: "Veuillez confirmer votre présence",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const drinkPreferences = [...drinks];
+      if (customDrink.trim()) {
+        drinkPreferences.push(customDrink.trim());
+      }
+
+      await createOrUpdateRSVPMutation.mutateAsync({
+        invitee_id: invitee.id,
+        event_id: event.id,
+        status: rsvpStatus === 'yes' ? 'confirmed' : 'declined',
+        guest_count: rsvpStatus === 'yes' ? guestCount + 1 : 0,
+        drink_preferences: drinkPreferences,
+        dietary_restrictions: dietaryRestrictions || undefined
+      });
+
+      toast({
+        title: "Succès",
+        description: `Votre ${rsvpStatus === 'yes' ? 'confirmation' : 'refus'} a été enregistré !`,
+      });
+
+    } catch (error) {
+      console.error('Error submitting RSVP:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer votre réponse. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isExpired) {
+    return (
+      <div className="min-h-screen bg-gradient-subtle flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="text-center p-8">
+            <AlertCircle className="w-16 h-16 text-warning mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-4">Invitation Expirée</h1>
+            <p className="text-muted-foreground mb-4">
+              Cette invitation a expiré le {new Date((invitee as any).invitation_expires_at!).toLocaleDateString('fr-FR')}.
+            </p>
+            <Button asChild>
+              <a href="/">Retour à l'accueil</a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -117,10 +188,36 @@ const InvitationPage = () => {
                 Détails de l'Événement
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
               <p className="text-muted-foreground leading-relaxed">
                 {event.description || "Nous avons l'honneur de vous convier à cet événement exceptionnel. Votre présence nous ferait grand plaisir !"}
               </p>
+              
+              {/* Table Assignment */}
+              {(invitee as any).table_number && (
+                <div className="bg-accent/10 p-4 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Table className="w-5 h-5 text-accent" />
+                    <h4 className="font-semibold">Votre table assignée</h4>
+                  </div>
+                  <p className="text-foreground">
+                    <span className="font-bold">Table {(invitee as any).table_number}</span>
+                    {(invitee as any).table_name && (
+                      <span className="text-muted-foreground"> - {(invitee as any).table_name}</span>
+                    )}
+                  </p>
+                </div>
+              )}
+              
+              {/* Expiration Notice */}
+              {(invitee as any).invitation_expires_at && (
+                <div className="bg-warning/10 p-3 rounded-lg">
+                  <p className="text-sm text-warning-foreground">
+                    <AlertCircle className="w-4 h-4 inline mr-1" />
+                    Cette invitation expire le {new Date((invitee as any).invitation_expires_at).toLocaleDateString('fr-FR')}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -201,56 +298,86 @@ const InvitationPage = () => {
                 </div>
               )}
 
-              <Button className="w-full bg-gradient-primary hover:shadow-gold transition-smooth">
+              <Button 
+                className="w-full bg-gradient-primary hover:shadow-gold transition-smooth"
+                onClick={handleSubmitRSVP}
+                disabled={isSubmitting}
+              >
                 <Users className="w-4 h-4 mr-2" />
-                {rsvpStatus === 'yes' ? 'Confirmer ma Présence' : 'Confirmer mon Absence'}
+                {isSubmitting ? 'Enregistrement...' : 
+                 rsvpStatus === 'yes' ? 'Confirmer ma Présence' : 
+                 rsvpStatus === 'no' ? 'Confirmer mon Absence' : 'Confirmer'}
               </Button>
             </CardContent>
           </Card>
 
-          {/* Drinks Preferences */}
+          {/* Drinks Preferences & Dietary Restrictions */}
           <Card className="shadow-card">
             <CardHeader>
-              <CardTitle>Préférences de Boissons</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Utensils className="w-5 h-5 text-accent" />
+                Préférences Culinaires
+              </CardTitle>
               <CardDescription>
-                Aidez-nous à préparer la réception (optionnel)
+                Aidez-nous à préparer la réception selon vos goûts (optionnel)
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                {drinkOptions.map((drink) => (
-                  <div key={drink} className="flex items-center space-x-2">
-                    <Checkbox 
-                      id={drink}
-                      checked={drinks.includes(drink)}
-                      onCheckedChange={(checked) => handleDrinkChange(drink, checked as boolean)}
-                    />
-                    <Label htmlFor={drink} className="text-sm">{drink}</Label>
+            <CardContent className="space-y-6">
+              <div>
+                <Label className="text-base font-medium mb-3 block">Préférences de boissons</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  {drinkOptions.map((drink) => (
+                    <div key={drink} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={drink}
+                        checked={drinks.includes(drink)}
+                        onCheckedChange={(checked) => handleDrinkChange(drink, checked as boolean)}
+                      />
+                      <Label htmlFor={drink} className="text-sm">{drink}</Label>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="space-y-2 mt-4">
+                  <Label htmlFor="custom-drink">Autre préférence</Label>
+                  <Input 
+                    id="custom-drink" 
+                    placeholder="Précisez votre préférence..."
+                    value={customDrink}
+                    onChange={(e) => setCustomDrink(e.target.value)}
+                  />
+                </div>
+
+                {(drinks.length > 0 || customDrink) && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {drinks.map((drink) => (
+                      <Badge key={drink} variant="secondary" className="text-xs">
+                        {drink}
+                      </Badge>
+                    ))}
+                    {customDrink && (
+                      <Badge variant="secondary" className="text-xs">
+                        {customDrink}
+                      </Badge>
+                    )}
                   </div>
-                ))}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="custom-drink">Autre préférence</Label>
-                <Input 
-                  id="custom-drink" 
-                  placeholder="Précisez votre préférence..."
-                  value={customDrink}
-                  onChange={(e) => setCustomDrink(e.target.value)}
-                />
+                )}
               </div>
 
-              <div className="flex flex-wrap gap-2">
-                {drinks.map((drink) => (
-                  <Badge key={drink} variant="secondary" className="text-xs">
-                    {drink}
-                  </Badge>
-                ))}
-                {customDrink && (
-                  <Badge variant="secondary" className="text-xs">
-                    {customDrink}
-                  </Badge>
-                )}
+              <div className="space-y-2">
+                <Label htmlFor="dietary-restrictions" className="text-base font-medium">
+                  Restrictions alimentaires
+                </Label>
+                <Textarea 
+                  id="dietary-restrictions"
+                  placeholder="Allergies, régimes spéciaux, restrictions religieuses..."
+                  value={dietaryRestrictions}
+                  onChange={(e) => setDietaryRestrictions(e.target.value)}
+                  className="min-h-[80px] resize-none"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Merci de nous indiquer vos allergies ou régimes particuliers pour que nous puissions vous accueillir dans les meilleures conditions.
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -290,12 +417,31 @@ const InvitationPage = () => {
 
         {/* QR Code Section */}
         <div className="mt-8">
-          <QRCodeGenerator 
-            data={`${window.location.origin}/invitation/${token}`}
-            title="Votre QR Code Personnel"
-            description="Présentez ce code à l'entrée de l'événement"
-            size={200}
-          />
+          <Card className="shadow-card">
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-2">
+                <Users className="w-5 h-5 text-accent" />
+                Votre QR Code Personnel
+              </CardTitle>
+              <CardDescription>
+                Présentez ce code à l'entrée de l'événement pour un accès rapide
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center space-y-4">
+              <QRCodeGenerator 
+                data={`${window.location.origin}/invitation/${token}`}
+                size={200}
+              />
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Code d'invitation: <span className="font-mono">{token?.slice(0, 8)}...</span>
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Gardez ce code accessible le jour de l'événement
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

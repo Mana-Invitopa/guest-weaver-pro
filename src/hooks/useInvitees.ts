@@ -14,6 +14,9 @@ export interface Invitee {
   checked_in_at?: string;
   created_at: string;
   updated_at: string;
+  table_number?: number;
+  table_name?: string;
+  invitation_expires_at?: string;
 }
 
 export interface CreateInviteeData {
@@ -54,6 +57,9 @@ export const useInvitees = (eventId: string) => {
         checked_in_at: item.checked_in_at,
         created_at: item.created_at,
         updated_at: item.updated_at,
+        table_number: (item as any).table_number,
+        table_name: (item as any).table_name,
+        invitation_expires_at: (item as any).invitation_expires_at,
       })) as Invitee[];
     },
     enabled: !!eventId && !!user,
