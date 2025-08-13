@@ -21,7 +21,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 const mainNavItems = [
-  { title: "Accueil", url: "/admin", icon: Home },
+  { title: "Tableau de Bord", url: "/admin", icon: Home },
   { title: "Créer un Événement", url: "/admin/events/new", icon: Plus },
 ];
 
@@ -29,7 +29,11 @@ const eventManagementItems = [
   { title: "Tous les Événements", url: "/admin/events", icon: Calendar },
   { title: "Événements Actifs", url: "/admin/events/active", icon: CheckCircle },
   { title: "Événements Archivés", url: "/admin/events/archived", icon: Archive },
-  { title: "Analyses & Stats", url: "/admin/analytics", icon: BarChart3 },
+  { title: "Analyses & Statistiques", url: "/admin/analytics", icon: BarChart3 },
+];
+
+const systemItems = [
+  { title: "Paramètres", url: "/admin/settings", icon: Settings },
 ];
 
 export function AdminSidebar() {
@@ -41,6 +45,7 @@ export function AdminSidebar() {
   
   const [isEventManagementOpen, setIsEventManagementOpen] = useState(true);
   const [isCurrentEventOpen, setIsCurrentEventOpen] = useState(!!eventId);
+  const [isSystemOpen, setIsSystemOpen] = useState(false);
 
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive: active }: { isActive: boolean }) =>
@@ -138,6 +143,34 @@ export function AdminSidebar() {
             </Collapsible>
           </SidebarGroup>
         )}
+
+        {/* System Settings */}
+        <SidebarGroup>
+          <Collapsible open={isSystemOpen} onOpenChange={setIsSystemOpen}>
+            <CollapsibleTrigger asChild>
+              <SidebarGroupLabel className="cursor-pointer flex items-center justify-between hover:bg-sidebar-accent/50 px-2 py-1 rounded">
+                Système
+                {!collapsed && <ChevronDown className={`h-4 w-4 transition-transform ${isSystemOpen ? 'rotate-0' : '-rotate-90'}`} />}
+              </SidebarGroupLabel>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {systemItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <Link to={item.url} className={getNavCls({ isActive: isActive(item.url) })}>
+                          <item.icon className="mr-3 h-4 w-4" />
+                          {!collapsed && <span>{item.title}</span>}
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );

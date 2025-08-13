@@ -7,10 +7,14 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminEventsPage from "./pages/AdminEventsPage";
 import EventCreation from "./pages/EventCreation";
 import InvitationPage from "./pages/InvitationPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminDashboardLayout from "./pages/AdminDashboardLayout";
+import Settings from "./pages/Settings";
+import Analytics from "./pages/Analytics";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -26,30 +30,169 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/invitation/:token?" element={<InvitationPage />} />
+            
+            {/* Admin Routes with Layout */}
             <Route 
               path="/admin" 
               element={
                 <ProtectedRoute>
-                  <AdminDashboard />
+                  <AdminDashboardLayout>
+                    <AdminDashboard />
+                  </AdminDashboardLayout>
                 </ProtectedRoute>
               } 
             />
             <Route 
-              path="/admin/event/:eventId" 
+              path="/admin/events" 
               element={
                 <ProtectedRoute>
-                  <AdminDashboard />
+                  <AdminDashboardLayout>
+                    <AdminEventsPage />
+                  </AdminDashboardLayout>
                 </ProtectedRoute>
               } 
             />
             <Route 
-              path="/admin/create-event" 
+              path="/admin/events/new" 
               element={
                 <ProtectedRoute>
-                  <EventCreation />
+                  <AdminDashboardLayout>
+                    <EventCreation />
+                  </AdminDashboardLayout>
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/admin/events/:eventId" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <AdminDashboard />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/events/:eventId/edit" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <EventCreation />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/events/:eventId/guests" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <AdminDashboard />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/events/:eventId/qr" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <AdminDashboard />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/events/:eventId/checkin" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <AdminDashboard />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/events/:eventId/tables" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <AdminDashboard />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/events/:eventId/invitations" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <AdminDashboard />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/events/:eventId/guestbook" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <AdminDashboard />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/events/:eventId/settings" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <AdminDashboard />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/events/active" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <AdminEventsPage />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/events/archived" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <AdminEventsPage />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/analytics" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <Analytics />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/settings" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <Settings />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
