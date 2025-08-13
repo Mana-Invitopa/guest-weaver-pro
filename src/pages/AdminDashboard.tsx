@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import GuestManagement from "@/components/GuestManagement";
 import QRCodeGenerator from "@/components/QRCodeGenerator";
 import CheckInSystem from "@/components/CheckInSystem";
+import EventManagementDashboard from "@/components/EventManagementDashboard";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -21,26 +22,9 @@ const AdminDashboard = () => {
   const { data: selectedEvent } = useEvent(eventId || '');
   const { data: eventInvitees = [] } = useInvitees(eventId || '');
 
-  // If eventId is provided, show event detail view
-  if (eventId && selectedEvent) {
-    return (
-      <div className="min-h-screen bg-gradient-subtle">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <Tabs defaultValue="guests" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="guests">Invités</TabsTrigger>
-              <TabsTrigger value="qrcode">QR Codes</TabsTrigger>
-              <TabsTrigger value="checkin">Check-in</TabsTrigger>
-              <TabsTrigger value="stats">Stats</TabsTrigger>
-            </TabsList>
-            <TabsContent value="guests"><GuestManagement eventId={eventId} /></TabsContent>
-            <TabsContent value="qrcode"><QRCodeGenerator data={`${window.location.origin}/invitation`} /></TabsContent>
-            <TabsContent value="checkin"><CheckInSystem eventId={eventId} /></TabsContent>
-          </Tabs>
-        </div>
-      </div>
-    );
+  // If eventId is provided, show event management dashboard
+  if (eventId) {
+    return <EventManagementDashboard />;
   }
 
   // Calculate real stats from events data
@@ -171,8 +155,10 @@ const AdminDashboard = () => {
                             <Badge variant={status === 'active' ? 'default' : status === 'completed' ? 'secondary' : 'outline'}>
                               {statusLabels[status]}
                             </Badge>
-                            <Button variant="outline" size="sm">
-                              Gérer
+                            <Button variant="outline" size="sm" asChild>
+                              <Link to={`/admin/events/${event.id}`}>
+                                Gérer
+                              </Link>
                             </Button>
                           </div>
                         </div>
