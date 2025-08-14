@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle, XCircle, Search, UserCheck, Clock, Users } from "lucide-react";
+import { CheckCircle, XCircle, Search, UserCheck, Clock, Users, Camera, Table as TableIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useInvitees, useCheckInInvitee } from "@/hooks/useInvitees";
+import QRScanner from "./QRScanner";
 
 interface CheckInSystemProps {
   eventId: string;
@@ -15,6 +16,7 @@ interface CheckInSystemProps {
 const CheckInSystem = ({ eventId }: CheckInSystemProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [scanMode, setScanMode] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   
   const { toast } = useToast();
   const { data: invitees = [], isLoading } = useInvitees(eventId);
@@ -32,13 +34,15 @@ const CheckInSystem = ({ eventId }: CheckInSystemProps) => {
     pending: invitees.filter(i => !i.is_checked_in).length,
   };
 
-  const handleCheckIn = async (token: string, guestName: string) => {
+  const handleCheckIn = async (token: string, guestName: string, tableInfo?: { number: number, name: string }) => {
     try {
       await checkInMutation.mutateAsync(token);
       
+      const tableText = tableInfo ? ` (Table ${tableInfo.number} - ${tableInfo.name})` : '';
+      
       toast({
         title: "Check-in réussi !",
-        description: `${guestName} a été enregistré comme présent`,
+        description: `${guestName} a été enregistré comme présent${tableText}`,
       });
     } catch (error) {
       console.error('Error checking in guest:', error);
@@ -57,9 +61,38 @@ const CheckInSystem = ({ eventId }: CheckInSystemProps) => {
     if (query.length > 10) {
       const invitee = invitees.find(i => i.token.toLowerCase().includes(query.toLowerCase()));
       if (invitee && !invitee.is_checked_in) {
-        handleCheckIn(invitee.token, invitee.name);
+        const tableInfo = invitee.table_number && invitee.table_name ? 
+          { number: invitee.table_number, name: invitee.table_name } : undefined;
+        handleCheckIn(invitee.token, invitee.name, tableInfo);
         setSearchTerm(""); // Clear search after auto check-in
       }
+    }
+  };
+
+  const handleQRScanSuccess = (scannedData: string) => {
+    // Extract token from scanned data (assuming it's a URL with token)
+    const tokenMatch = scannedData.match(/invitation\/([a-f0-9]+)/i);
+    const token = tokenMatch ? tokenMatch[1] : scannedData;
+    
+    const invitee = invitees.find(i => i.token === token);
+    if (invitee && !invitee.is_checked_in) {
+      const tableInfo = invitee.table_number && invitee.table_name ? 
+        { number: invitee.table_number, name: invitee.table_name } : undefined;
+      handleCheckIn(invitee.token, invitee.name, tableInfo);
+      setShowScanner(false);
+    } else if (invitee?.is_checked_in) {
+      toast({
+        title: "Déjà enregistré",
+        description: `${invitee.name} est déjà enregistré comme présent`,
+        variant: "destructive",
+      });
+      setShowScanner(false);
+    } else {
+      toast({
+        title: "QR Code invalide",
+        description: "Ce QR code ne correspond à aucun invité",
+        variant: "destructive",
+      });
     }
   };
 
@@ -136,24 +169,19 @@ const CheckInSystem = ({ eventId }: CheckInSystemProps) => {
               />
             </div>
             <Button 
-              variant={scanMode ? "default" : "outline"}
-              onClick={() => setScanMode(!scanMode)}
+              variant={showScanner ? "default" : "outline"}
+              onClick={() => setShowScanner(!showScanner)}
             >
-              <UserCheck className="w-4 h-4 mr-2" />
-              {scanMode ? "Mode manuel" : "Mode scan"}
+              <Camera className="w-4 h-4 mr-2" />
+              {showScanner ? "Fermer Scanner" : "Scanner QR"}
             </Button>
           </div>
 
-          {scanMode && (
-            <Card className="bg-muted/20 border-dashed">
-              <CardContent className="p-6 text-center">
-                <UserCheck className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-sm text-muted-foreground">
-                  Mode scan activé - Utilisez la recherche ci-dessus pour scanner un QR code
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          <QRScanner 
+            isActive={showScanner}
+            onScanSuccess={handleQRScanSuccess}
+            onClose={() => setShowScanner(false)}
+          />
         </CardContent>
       </Card>
 
@@ -169,19 +197,32 @@ const CheckInSystem = ({ eventId }: CheckInSystemProps) => {
           <div className="rounded-md border">
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Nom</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Heure d'arrivée</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
+                  <TableRow>
+                    <TableHead>Nom</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Table</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead>Heure d'arrivée</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredInvitees.map((invitee) => (
                   <TableRow key={invitee.id}>
                     <TableCell className="font-medium">{invitee.name}</TableCell>
                     <TableCell>{invitee.email}</TableCell>
+                    <TableCell>
+                      {invitee.table_number ? (
+                        <div className="flex items-center gap-1">
+                          <TableIcon className="w-3 h-3 text-accent" />
+                          <span className="text-sm">
+                            {invitee.table_number} - {invitee.table_name || 'Sans nom'}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">Non assignée</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {invitee.is_checked_in ? (
                         <Badge className="bg-success text-success-foreground">
@@ -209,7 +250,11 @@ const CheckInSystem = ({ eventId }: CheckInSystemProps) => {
                       {!invitee.is_checked_in && (
                         <Button 
                           size="sm"
-                          onClick={() => handleCheckIn(invitee.token, invitee.name)}
+                          onClick={() => {
+                            const tableInfo = invitee.table_number && invitee.table_name ? 
+                              { number: invitee.table_number, name: invitee.table_name } : undefined;
+                            handleCheckIn(invitee.token, invitee.name, tableInfo);
+                          }}
                           disabled={checkInMutation.isPending}
                           className="bg-success hover:bg-success/90"
                         >

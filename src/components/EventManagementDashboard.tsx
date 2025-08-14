@@ -14,6 +14,7 @@ import TableManagement from "./TableManagement";
 import InvitationSender from "./InvitationSender";
 import GuestbookManagement from "./GuestbookManagement";
 import ThemeSelector from "./ThemeSelector";
+import DrinkPreferencesManager from "./DrinkPreferencesManager";
 
 const EventManagementDashboard = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -225,6 +226,8 @@ const EventManagementDashboard = () => {
                 <ThemeSelector eventId={eventId} />
               </CardContent>
             </Card>
+            
+            <DrinkPreferencesManager eventId={eventId} />
             
             <Card className="shadow-card">
               <CardHeader>

@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useCreateProfile, useUpdateProfile } from "@/hooks/useProfiles";
 import { User, Bell, Shield, Palette, Globe, Download, Trash2, Save } from "lucide-react";
 import { toast } from "sonner";
+import ProfilePhotoUpload from "@/components/ProfilePhotoUpload";
 
 const Settings = () => {
   const { user, signOut } = useAuth();
@@ -22,6 +23,7 @@ const Settings = () => {
   const [profileForm, setProfileForm] = useState({
     full_name: "",
     email: "",
+    avatar_url: "",
   });
 
   const [notifications, setNotifications] = useState({
@@ -42,11 +44,13 @@ const Settings = () => {
       setProfileForm({
         full_name: profile.full_name || "",
         email: profile.email || user?.email || "",
+        avatar_url: (profile as any).avatar_url || "",
       });
     } else if (user) {
       setProfileForm({
         full_name: "",
         email: user.email || "",
+        avatar_url: "",
       });
     }
   }, [profile, user]);
@@ -122,12 +126,71 @@ const Settings = () => {
 
         {/* Profile Tab */}
         <TabsContent value="profile">
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <ProfilePhotoUpload 
+                currentPhotoUrl={profileForm.avatar_url}
+                onPhotoUploaded={(url) => setProfileForm(prev => ({ ...prev, avatar_url: url }))}
+                userName={profileForm.full_name}
+              />
+              
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle>Informations du profil</CardTitle>
+                  <CardDescription>
+                    Mettez à jour vos informations personnelles
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleProfileSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="full_name">Nom complet</Label>
+                      <Input
+                        id="full_name"
+                        value={profileForm.full_name}
+                        onChange={(e) => setProfileForm(prev => ({
+                          ...prev,
+                          full_name: e.target.value
+                        }))}
+                        placeholder="Votre nom complet"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Adresse e-mail</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={profileForm.email}
+                        onChange={(e) => setProfileForm(prev => ({
+                          ...prev,
+                          email: e.target.value
+                        }))}
+                        placeholder="votre@email.com"
+                      />
+                    </div>
+
+                    <Button 
+                      type="submit" 
+                      className="bg-gradient-primary w-full"
+                      disabled={createProfileMutation.isPending || updateProfileMutation.isPending}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {createProfileMutation.isPending || updateProfileMutation.isPending 
+                        ? "Sauvegarde..." 
+                        : "Sauvegarder"
+                      }
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+            
             <Card className="shadow-card">
               <CardHeader className="text-center">
-                <Avatar className="w-24 h-24 mx-auto mb-4">
-                  <AvatarImage src="" />
-                  <AvatarFallback className="text-lg">
+                <Avatar className="w-20 h-20 mx-auto mb-4">
+                  <AvatarImage src={profileForm.avatar_url} />
+                  <AvatarFallback className="text-lg bg-gradient-primary text-white">
                     {profileForm.full_name ? getUserInitials(profileForm.full_name) : 'U'}
                   </AvatarFallback>
                 </Avatar>
@@ -137,57 +200,6 @@ const Settings = () => {
                   Administrateur
                 </Badge>
               </CardHeader>
-            </Card>
-
-            <Card className="md:col-span-2 shadow-card">
-              <CardHeader>
-                <CardTitle>Informations du profil</CardTitle>
-                <CardDescription>
-                  Mettez à jour vos informations personnelles
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleProfileSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="full_name">Nom complet</Label>
-                    <Input
-                      id="full_name"
-                      value={profileForm.full_name}
-                      onChange={(e) => setProfileForm(prev => ({
-                        ...prev,
-                        full_name: e.target.value
-                      }))}
-                      placeholder="Votre nom complet"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Adresse e-mail</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profileForm.email}
-                      onChange={(e) => setProfileForm(prev => ({
-                        ...prev,
-                        email: e.target.value
-                      }))}
-                      placeholder="votre@email.com"
-                    />
-                  </div>
-
-                  <Button 
-                    type="submit" 
-                    className="bg-gradient-primary"
-                    disabled={createProfileMutation.isPending || updateProfileMutation.isPending}
-                  >
-                    <Save className="w-4 h-4 mr-2" />
-                    {createProfileMutation.isPending || updateProfileMutation.isPending 
-                      ? "Sauvegarde..." 
-                      : "Sauvegarder"
-                    }
-                  </Button>
-                </form>
-              </CardContent>
             </Card>
           </div>
         </TabsContent>

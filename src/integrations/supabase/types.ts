@@ -14,15 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      event_tables: {
+        Row: {
+          created_at: string
+          current_seats: number | null
+          event_id: string
+          id: string
+          max_seats: number
+          table_name: string
+          table_number: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          current_seats?: number | null
+          event_id: string
+          id?: string
+          max_seats?: number
+          table_name: string
+          table_number: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          current_seats?: number | null
+          event_id?: string
+          id?: string
+          max_seats?: number
+          table_name?: string
+          table_number?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_tables_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           admin_id: string
           background_image_url: string | null
           created_at: string | null
+          current_guests: number | null
           date_time: string
           description: string | null
           id: string
           location: string
+          max_guests: number | null
+          status: string | null
           template: string | null
           title: string
           updated_at: string | null
@@ -31,10 +75,13 @@ export type Database = {
           admin_id: string
           background_image_url?: string | null
           created_at?: string | null
+          current_guests?: number | null
           date_time: string
           description?: string | null
           id?: string
           location: string
+          max_guests?: number | null
+          status?: string | null
           template?: string | null
           title: string
           updated_at?: string | null
@@ -43,10 +90,13 @@ export type Database = {
           admin_id?: string
           background_image_url?: string | null
           created_at?: string | null
+          current_guests?: number | null
           date_time?: string
           description?: string | null
           id?: string
           location?: string
+          max_guests?: number | null
+          status?: string | null
           template?: string | null
           title?: string
           updated_at?: string | null
@@ -105,10 +155,13 @@ export type Database = {
           email: string
           event_id: string
           id: string
+          invitation_expires_at: string | null
           is_checked_in: boolean | null
           name: string
           phone: string | null
           qr_code_data: string | null
+          table_name: string | null
+          table_number: number | null
           token: string
           updated_at: string | null
         }
@@ -118,10 +171,13 @@ export type Database = {
           email: string
           event_id: string
           id?: string
+          invitation_expires_at?: string | null
           is_checked_in?: boolean | null
           name: string
           phone?: string | null
           qr_code_data?: string | null
+          table_name?: string | null
+          table_number?: number | null
           token: string
           updated_at?: string | null
         }
@@ -131,10 +187,13 @@ export type Database = {
           email?: string
           event_id?: string
           id?: string
+          invitation_expires_at?: string | null
           is_checked_in?: boolean | null
           name?: string
           phone?: string | null
           qr_code_data?: string | null
+          table_name?: string | null
+          table_number?: number | null
           token?: string
           updated_at?: string | null
         }
