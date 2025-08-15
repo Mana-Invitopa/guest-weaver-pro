@@ -88,6 +88,15 @@ const InvitationPage = () => {
       return;
     }
 
+    if (!guestName.trim() || !guestEmail.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Nom et email sont requis",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -100,14 +109,14 @@ const InvitationPage = () => {
         invitee_id: invitee.id,
         event_id: event.id,
         status: rsvpStatus === 'yes' ? 'confirmed' : 'declined',
-        guest_count: rsvpStatus === 'yes' ? guestCount + 1 : 0,
+        guest_count: rsvpStatus === 'yes' ? Math.max(1, guestCount + 1) : 0,
         drink_preferences: drinkPreferences,
         dietary_restrictions: dietaryRestrictions || undefined
       });
 
       toast({
-        title: "Succès",
-        description: `Votre ${rsvpStatus === 'yes' ? 'confirmation' : 'refus'} a été enregistré !`,
+        title: "Succès ✨",
+        description: `Votre ${rsvpStatus === 'yes' ? 'confirmation' : 'refus'} a été enregistré avec succès !`,
       });
 
     } catch (error) {
@@ -226,7 +235,12 @@ const InvitationPage = () => {
             <CardHeader>
               <CardTitle>Confirmation de Présence</CardTitle>
               <CardDescription>
-                Merci de confirmer votre présence avant le 10 Mars 2024
+                Merci de confirmer votre présence pour {event.title}
+                {event.rsvp_deadline && (
+                  <span className="block mt-1 text-warning">
+                    Date limite: {new Date(event.rsvp_deadline).toLocaleDateString('fr-FR')}
+                  </span>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -273,28 +287,61 @@ const InvitationPage = () => {
               </div>
 
               {rsvpStatus === 'yes' && (
-                <div className="space-y-3">
-                  <Label htmlFor="guests">Nombre d'accompagnants</Label>
-                  <div className="flex items-center space-x-3">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setGuestCount(Math.max(0, guestCount - 1))}
-                    >
-                      -
-                    </Button>
-                    <span className="w-12 text-center font-medium">{guestCount}</span>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => setGuestCount(guestCount + 1)}
-                    >
-                      +
-                    </Button>
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <Label htmlFor="guests">Nombre d'accompagnants</Label>
+                    <div className="flex items-center space-x-3">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setGuestCount(Math.max(0, guestCount - 1))}
+                        type="button"
+                      >
+                        -
+                      </Button>
+                      <span className="w-12 text-center font-medium">{guestCount}</span>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => setGuestCount(guestCount + 1)}
+                        type="button"
+                      >
+                        +
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Total: {guestCount + 1} personne{guestCount > 0 ? 's' : ''} (vous inclus)
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Total: {guestCount + 1} personne{guestCount > 0 ? 's' : ''}
-                  </p>
+                  
+                  {/* Drink Preferences */}
+                  <div className="space-y-3">
+                    <Label className="text-base font-medium">Préférences de boissons (optionnel)</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {drinkOptions.slice(0, 8).map((drink) => (
+                        <div key={drink} className="flex items-center space-x-2">
+                          <Checkbox 
+                            id={`drink-${drink}`}
+                            checked={drinks.includes(drink)}
+                            onCheckedChange={(checked) => handleDrinkChange(drink, checked as boolean)}
+                          />
+                          <Label htmlFor={`drink-${drink}`} className="text-sm">{drink}</Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Dietary Restrictions */}
+                  <div className="space-y-2">
+                    <Label htmlFor="dietary">Restrictions alimentaires (optionnel)</Label>
+                    <Textarea 
+                      id="dietary"
+                      placeholder="Allergies, régimes spéciaux..."
+                      value={dietaryRestrictions}
+                      onChange={(e) => setDietaryRestrictions(e.target.value)}
+                      className="min-h-[60px] resize-none"
+                    />
+                  </div>
                 </div>
               )}
 
@@ -311,138 +358,68 @@ const InvitationPage = () => {
             </CardContent>
           </Card>
 
-          {/* Drinks Preferences & Dietary Restrictions */}
+          {/* Event Cover and QR Code */}
           <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Utensils className="w-5 h-5 text-accent" />
-                Préférences Culinaires
-              </CardTitle>
-              <CardDescription>
-                Aidez-nous à préparer la réception selon vos goûts (optionnel)
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <Label className="text-base font-medium mb-3 block">Préférences de boissons</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  {drinkOptions.map((drink) => (
-                    <div key={drink} className="flex items-center space-x-2">
-                      <Checkbox 
-                        id={drink}
-                        checked={drinks.includes(drink)}
-                        onCheckedChange={(checked) => handleDrinkChange(drink, checked as boolean)}
-                      />
-                      <Label htmlFor={drink} className="text-sm">{drink}</Label>
-                    </div>
-                  ))}
-                </div>
-                
-                <div className="space-y-2 mt-4">
-                  <Label htmlFor="custom-drink">Autre préférence</Label>
-                  <Input 
-                    id="custom-drink" 
-                    placeholder="Précisez votre préférence..."
-                    value={customDrink}
-                    onChange={(e) => setCustomDrink(e.target.value)}
+            <CardContent className="p-0">
+              {event.background_image_url ? (
+                <div className="relative">
+                  <img 
+                    src={event.background_image_url} 
+                    alt={event.title}
+                    className="w-full h-48 object-cover rounded-t-lg"
                   />
-                </div>
-
-                {(drinks.length > 0 || customDrink) && (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {drinks.map((drink) => (
-                      <Badge key={drink} variant="secondary" className="text-xs">
-                        {drink}
-                      </Badge>
-                    ))}
-                    {customDrink && (
-                      <Badge variant="secondary" className="text-xs">
-                        {customDrink}
-                      </Badge>
-                    )}
+                  <div className="absolute inset-0 bg-black/20 rounded-t-lg"></div>
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <h3 className="font-semibold">{event.title}</h3>
+                    <p className="text-sm opacity-90">{event.location}</p>
                   </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="dietary-restrictions" className="text-base font-medium">
-                  Restrictions alimentaires
-                </Label>
-                <Textarea 
-                  id="dietary-restrictions"
-                  placeholder="Allergies, régimes spéciaux, restrictions religieuses..."
-                  value={dietaryRestrictions}
-                  onChange={(e) => setDietaryRestrictions(e.target.value)}
-                  className="min-h-[80px] resize-none"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Merci de nous indiquer vos allergies ou régimes particuliers pour que nous puissions vous accueillir dans les meilleures conditions.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Guestbook */}
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Camera className="w-5 h-5 text-accent" />
-                Livre d'Or
-              </CardTitle>
-              <CardDescription>
-                Laissez un message aux futurs mariés
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="message">Votre message</Label>
-                <Textarea 
-                  id="message" 
-                  placeholder="Toutes nos félicitations pour votre mariage..."
-                  className="min-h-[100px] resize-none"
-                />
-              </div>
+                </div>
+              ) : (
+                <div className="h-32 bg-gradient-hero rounded-t-lg flex items-center justify-center">
+                  <div className="text-center text-white">
+                    <h3 className="font-semibold">{event.title}</h3>
+                    <p className="text-sm opacity-90">{event.location}</p>
+                  </div>
+                </div>
+              )}
               
-              <div className="space-y-2">
-                <Label htmlFor="photo">Ajouter une photo (optionnel)</Label>
-                <Input id="photo" type="file" accept="image/*" />
+              <div className="p-6">
+                <div className="text-center">
+                  <h4 className="font-semibold mb-2 flex items-center justify-center gap-2">
+                    <Users className="w-4 h-4 text-accent" />
+                    Votre QR Code Personnel
+                  </h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Présentez ce code à l'entrée pour un accès rapide
+                  </p>
+                  <div className="flex justify-center">
+                    <QRCodeGenerator 
+                      data={`${window.location.origin}/invitation/${token}`}
+                      size={150}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Code: <span className="font-mono">{token?.slice(0, 8)}...</span>
+                  </p>
+                </div>
               </div>
-
-              <Button variant="outline" className="w-full">
-                Ajouter au Livre d'Or
-              </Button>
             </CardContent>
           </Card>
         </div>
 
-        {/* QR Code Section */}
-        <div className="mt-8">
-          <Card className="shadow-card">
-            <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2">
-                <Users className="w-5 h-5 text-accent" />
-                Votre QR Code Personnel
-              </CardTitle>
-              <CardDescription>
-                Présentez ce code à l'entrée de l'événement pour un accès rapide
-              </CardDescription>
+        {/* Additional Event Information */}
+        {event.description && (
+          <Card className="shadow-card mt-8">
+            <CardHeader>
+              <CardTitle>À propos de l'événement</CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col items-center space-y-4">
-              <QRCodeGenerator 
-                data={`${window.location.origin}/invitation/${token}`}
-                size={200}
-              />
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">
-                  Code d'invitation: <span className="font-mono">{token?.slice(0, 8)}...</span>
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Gardez ce code accessible le jour de l'événement
-                </p>
-              </div>
+            <CardContent>
+              <p className="text-muted-foreground leading-relaxed">
+                {event.description}
+              </p>
             </CardContent>
           </Card>
-        </div>
+        )}
       </div>
     </div>
   );

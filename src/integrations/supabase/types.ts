@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -63,11 +63,14 @@ export type Database = {
           current_guests: number | null
           date_time: string
           description: string | null
+          event_type: string | null
           id: string
           location: string
           max_guests: number | null
+          rsvp_deadline: string | null
           status: string | null
           template: string | null
+          theme: string | null
           title: string
           updated_at: string | null
         }
@@ -78,11 +81,14 @@ export type Database = {
           current_guests?: number | null
           date_time: string
           description?: string | null
+          event_type?: string | null
           id?: string
           location: string
           max_guests?: number | null
+          rsvp_deadline?: string | null
           status?: string | null
           template?: string | null
+          theme?: string | null
           title: string
           updated_at?: string | null
         }
@@ -93,11 +99,14 @@ export type Database = {
           current_guests?: number | null
           date_time?: string
           description?: string | null
+          event_type?: string | null
           id?: string
           location?: string
           max_guests?: number | null
+          rsvp_deadline?: string | null
           status?: string | null
           template?: string | null
+          theme?: string | null
           title?: string
           updated_at?: string | null
         }
@@ -209,6 +218,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string | null
           email: string | null
           full_name: string | null
@@ -217,6 +227,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
@@ -225,6 +236,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null

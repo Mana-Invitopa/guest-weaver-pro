@@ -9,6 +9,7 @@ import { useEvents, useEvent } from "@/hooks/useEvents";
 import { useInvitees } from "@/hooks/useInvitees";
 import { useAuth } from "@/contexts/AuthContext";
 import GuestManagement from "@/components/GuestManagement";
+import EventPreviewCard from "@/components/EventPreviewCard";
 import QRCodeGenerator from "@/components/QRCodeGenerator";
 import CheckInSystem from "@/components/CheckInSystem";
 import EventManagementDashboard from "@/components/EventManagementDashboard";
@@ -134,36 +135,10 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 ) : events && events.length > 0 ? (
-                  <div className="space-y-4">
-                    {events.map((event) => {
-                      const status = getEventStatus(event.date_time);
-                      const statusLabels = {
-                        active: 'Actif',
-                        completed: 'Terminé',
-                        upcoming: 'À venir'
-                      };
-                      
-                      return (
-                        <div key={event.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-smooth">
-                          <div className="flex flex-col">
-                            <span className="font-medium">{event.title}</span>
-                            <span className="text-sm text-muted-foreground">
-                              {format(new Date(event.date_time), 'PPP', { locale: fr })} • {event.location}
-                            </span>
-                          </div>
-                          <div className="flex items-center space-x-3">
-                            <Badge variant={status === 'active' ? 'default' : status === 'completed' ? 'secondary' : 'outline'}>
-                              {statusLabels[status]}
-                            </Badge>
-                            <Button variant="outline" size="sm" asChild>
-                              <Link to={`/admin/events/${event.id}`}>
-                                Gérer
-                              </Link>
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {events.map((event) => (
+                      <EventPreviewCard key={event.id} event={event} />
+                    ))}
                   </div>
                 ) : (
                   <div className="text-center py-8">
