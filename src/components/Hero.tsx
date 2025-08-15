@@ -32,8 +32,8 @@ const Hero = () => {
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 transition-smooth">
-            <Link to="/demo">
-              Voir une démo
+            <Link to="/auth">
+              Découvrir la plateforme
             </Link>
           </Button>
         </div>

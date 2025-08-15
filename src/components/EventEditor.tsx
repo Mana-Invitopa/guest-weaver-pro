@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEvent, useUpdateEvent, useDeleteEvent } from "@/hooks/useEvents";
 import { useEventTables, useCreateEventTable } from "@/hooks/useEventTables";
 import EventCoverUpload from "./EventCoverUpload";
+import EventTypeSelector from "./EventTypeSelector";
 
 interface EventEditorProps {
   eventId: string;
@@ -34,7 +35,8 @@ const EventEditor = ({ eventId, onSave, onDelete }: EventEditorProps) => {
     date_time: "",
     max_guests: "",
     status: "draft" as string,
-    background_image_url: ""
+    background_image_url: "",
+    event_type: ""
   });
   
   const [newTable, setNewTable] = useState({
@@ -52,7 +54,8 @@ const EventEditor = ({ eventId, onSave, onDelete }: EventEditorProps) => {
         date_time: event.date_time ? new Date(event.date_time).toISOString().slice(0, 16) : "",
         max_guests: event.max_guests?.toString() || "",
         status: event.status || "draft",
-        background_image_url: event.background_image_url || ""
+        background_image_url: event.background_image_url || "",
+        event_type: (event as any).event_type || ""
       });
     }
   }, [event]);
@@ -197,8 +200,9 @@ const EventEditor = ({ eventId, onSave, onDelete }: EventEditorProps) => {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="general">Général</TabsTrigger>
+          <TabsTrigger value="type">Type</TabsTrigger>
           <TabsTrigger value="image">Image</TabsTrigger>
           <TabsTrigger value="tables">Tables</TabsTrigger>
           <TabsTrigger value="advanced">Avancé</TabsTrigger>
@@ -298,6 +302,13 @@ const EventEditor = ({ eventId, onSave, onDelete }: EventEditorProps) => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="type">
+          <EventTypeSelector 
+            selectedType={formData.event_type}
+            onTypeChange={(type) => handleInputChange('event_type', type)}
+          />
         </TabsContent>
 
         <TabsContent value="image">

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Plus, Users, Trash2, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useEventTables, useCreateEventTable, useDeleteEventTable, type EventTable } from "@/hooks/useEventTables";
@@ -68,16 +69,17 @@ const TableManagement = ({ eventId }: TableManagementProps) => {
     }
   };
 
-  const handleDeleteTable = async (tableId: string, tableName: string) => {
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer la table "${tableName}" ?`)) {
-      return;
-    }
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [tableToDelete, setTableToDelete] = useState<{ id: string; name: string } | null>(null);
+
+  const handleDeleteTable = async () => {
+    if (!tableToDelete) return;
 
     try {
-      await deleteTableMutation.mutateAsync(tableId);
+      await deleteTableMutation.mutateAsync(tableToDelete.id);
       toast({
         title: "Succès",
-        description: `Table "${tableName}" supprimée`,
+        description: `Table "${tableToDelete.name}" supprimée`,
       });
     } catch (error) {
       console.error('Error deleting table:', error);
@@ -86,6 +88,9 @@ const TableManagement = ({ eventId }: TableManagementProps) => {
         description: "Impossible de supprimer la table",
         variant: "destructive",
       });
+    } finally {
+      setDeleteConfirmOpen(false);
+      setTableToDelete(null);
     }
   };
 
@@ -275,7 +280,10 @@ const TableManagement = ({ eventId }: TableManagementProps) => {
                             <Button 
                               size="sm" 
                               variant="destructive"
-                              onClick={() => handleDeleteTable(table.id, table.table_name)}
+                              onClick={() => {
+                                setTableToDelete({ id: table.id, name: table.table_name });
+                                setDeleteConfirmOpen(true);
+                              }}
                               disabled={deleteTableMutation.isPending}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -291,6 +299,32 @@ const TableManagement = ({ eventId }: TableManagementProps) => {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="w-5 h-5 text-destructive" />
+              Confirmer la suppression
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer la table <strong>"{tableToDelete?.name}"</strong> ? 
+              Cette action est irréversible et tous les invités assignés à cette table seront désassignés.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteTable}
+              className="bg-destructive hover:bg-destructive/90"
+              disabled={deleteTableMutation.isPending}
+            >
+              {deleteTableMutation.isPending ? "Suppression..." : "Supprimer"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -78,12 +78,6 @@ const Features = () => {
               Rejoignez des milliers d'organisateurs qui font confiance à Invitopia Mini 
               pour leurs événements les plus importants.
             </p>
-            <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 max-w-md mx-auto">
-              <p className="text-sm text-white/80 mb-4">
-                <strong>Note:</strong> Pour utiliser toutes les fonctionnalités (authentification, base de données, envoi d'emails), 
-                veuillez connecter Supabase via le bouton vert en haut à droite.
-              </p>
-            </div>
           </div>
         </div>
       </div>

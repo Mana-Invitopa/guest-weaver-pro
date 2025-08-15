@@ -13,7 +13,7 @@ import CheckInSystem from "./CheckInSystem";
 import TableManagement from "./TableManagement";
 import InvitationSender from "./InvitationSender";
 import GuestbookManagement from "./GuestbookManagement";
-import ThemeSelector from "./ThemeSelector";
+import EnhancedThemeSelector from "./EnhancedThemeSelector";
 import DrinkPreferencesManager from "./DrinkPreferencesManager";
 
 const EventManagementDashboard = () => {
@@ -223,7 +223,11 @@ const EventManagementDashboard = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ThemeSelector eventId={eventId} />
+                <EnhancedThemeSelector 
+                  eventId={eventId} 
+                  eventType={(event as any)?.event_type}
+                  currentTheme={(event as any)?.theme}
+                />
               </CardContent>
             </Card>
             
