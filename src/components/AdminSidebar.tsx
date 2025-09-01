@@ -58,6 +58,7 @@ export function AdminSidebar() {
     { title: "Check-in", url: `/admin/events/${eventId}/checkin`, icon: UserCheck },
     { title: "Tables", url: `/admin/events/${eventId}/tables`, icon: Table },
     { title: "Invitations", url: `/admin/events/${eventId}/invitations`, icon: Mail },
+    { title: "Collaborateurs", url: `/admin/events/${eventId}/collaborators`, icon: Users },
     { title: "Livre d'Or", url: `/admin/events/${eventId}/guestbook`, icon: FileText },
     { title: "Paramètres", url: `/admin/events/${eventId}/settings`, icon: Settings },
   ] : [];

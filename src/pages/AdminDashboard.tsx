@@ -13,6 +13,8 @@ import EventPreviewCard from "@/components/EventPreviewCard";
 import QRCodeGenerator from "@/components/QRCodeGenerator";
 import CheckInSystem from "@/components/CheckInSystem";
 import EventManagementDashboard from "@/components/EventManagementDashboard";
+import GuestbookManagement from "@/components/GuestbookManagement";
+import CollaboratorManagement from "@/components/CollaboratorManagement";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 

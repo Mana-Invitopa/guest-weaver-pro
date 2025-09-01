@@ -15,6 +15,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboardLayout from "./pages/AdminDashboardLayout";
 import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
+import PublicEvents from "./pages/PublicEvents";
+import PublicEventDetail from "./pages/PublicEventDetail";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -143,6 +145,16 @@ const App = () => (
               } 
             />
             <Route 
+              path="/admin/events/:eventId/collaborators" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <AdminDashboard />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
               path="/admin/events/:eventId/settings" 
               element={
                 <ProtectedRoute>
@@ -192,6 +204,11 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            
+            
+            {/* Public Events Routes */}
+            <Route path="/events" element={<PublicEvents />} />
+            <Route path="/event/:eventId" element={<PublicEventDetail />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

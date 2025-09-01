@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useInviteeByToken } from "@/hooks/useInvitees";
 import { useCreateOrUpdateRSVP } from "@/hooks/useRSVP";
 import QRCodeGenerator from "@/components/QRCodeGenerator";
+import GuestbookForm from "@/components/GuestbookForm";
 
 const InvitationPage = () => {
   const { token } = useParams();
@@ -109,7 +110,7 @@ const InvitationPage = () => {
         invitee_id: invitee.id,
         event_id: event.id,
         status: rsvpStatus === 'yes' ? 'confirmed' : 'declined',
-        guest_count: rsvpStatus === 'yes' ? Math.max(1, guestCount + 1) : 0,
+        guest_count: rsvpStatus === 'yes' ? guestCount + 1 : 0, // Fixed: correct guest count calculation
         drink_preferences: drinkPreferences,
         dietary_restrictions: dietaryRestrictions || undefined
       });
@@ -406,6 +407,22 @@ const InvitationPage = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Guestbook for Wedding Events */}
+        {event.event_type === 'wedding' && (
+          <div className="mt-8">
+            <GuestbookForm 
+              eventId={event.id} 
+              inviteeId={invitee.id}
+              onSuccess={() => {
+                toast({
+                  title: "Message ajouté au livre d'or ✨",
+                  description: "Votre message a été ajouté avec succès !",
+                });
+              }}
+            />
+          </div>
+        )}
 
         {/* Additional Event Information */}
         {event.description && (

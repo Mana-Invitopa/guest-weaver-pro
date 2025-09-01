@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      event_collaborators: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          permissions: Json | null
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          permissions?: Json | null
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          permissions?: Json | null
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_collaborators_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_collaborators_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "public_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_tables: {
         Row: {
           created_at: string
@@ -53,6 +98,13 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "event_tables_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "public_events"
+            referencedColumns: ["id"]
+          },
         ]
       }
       events: {
@@ -64,9 +116,11 @@ export type Database = {
           date_time: string
           description: string | null
           event_type: string | null
+          featured: boolean | null
           id: string
           location: string
           max_guests: number | null
+          privacy: string | null
           rsvp_deadline: string | null
           status: string | null
           template: string | null
@@ -82,9 +136,11 @@ export type Database = {
           date_time: string
           description?: string | null
           event_type?: string | null
+          featured?: boolean | null
           id?: string
           location: string
           max_guests?: number | null
+          privacy?: string | null
           rsvp_deadline?: string | null
           status?: string | null
           template?: string | null
@@ -100,9 +156,11 @@ export type Database = {
           date_time?: string
           description?: string | null
           event_type?: string | null
+          featured?: boolean | null
           id?: string
           location?: string
           max_guests?: number | null
+          privacy?: string | null
           rsvp_deadline?: string | null
           status?: string | null
           template?: string | null
@@ -149,10 +207,46 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "guestbook_entries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "public_events"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "guestbook_entries_invitee_id_fkey"
             columns: ["invitee_id"]
             isOneToOne: false
             referencedRelation: "invitees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guestbook_photos: {
+        Row: {
+          created_at: string
+          guestbook_entry_id: string
+          id: string
+          photo_url: string
+        }
+        Insert: {
+          created_at?: string
+          guestbook_entry_id: string
+          id?: string
+          photo_url: string
+        }
+        Update: {
+          created_at?: string
+          guestbook_entry_id?: string
+          id?: string
+          photo_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guestbook_photos_guestbook_entry_id_fkey"
+            columns: ["guestbook_entry_id"]
+            isOneToOne: false
+            referencedRelation: "guestbook_entries"
             referencedColumns: ["id"]
           },
         ]
@@ -212,6 +306,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "public_events"
             referencedColumns: ["id"]
           },
         ]
@@ -292,6 +393,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "public_events"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "rsvps_invitee_id_fkey"
             columns: ["invitee_id"]
             isOneToOne: true
@@ -302,7 +410,48 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_events: {
+        Row: {
+          background_image_url: string | null
+          created_at: string | null
+          current_guests: number | null
+          date_time: string | null
+          description: string | null
+          event_type: string | null
+          id: string | null
+          location: string | null
+          max_guests: number | null
+          theme: string | null
+          title: string | null
+        }
+        Insert: {
+          background_image_url?: string | null
+          created_at?: string | null
+          current_guests?: number | null
+          date_time?: string | null
+          description?: string | null
+          event_type?: string | null
+          id?: string | null
+          location?: string | null
+          max_guests?: number | null
+          theme?: string | null
+          title?: string | null
+        }
+        Update: {
+          background_image_url?: string | null
+          created_at?: string | null
+          current_guests?: number | null
+          date_time?: string | null
+          description?: string | null
+          event_type?: string | null
+          id?: string | null
+          location?: string | null
+          max_guests?: number | null
+          theme?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       generate_invitation_token: {

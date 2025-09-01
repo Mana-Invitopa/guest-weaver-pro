@@ -20,6 +20,18 @@ const Navbar = () => {
           <span className="text-lg md:text-xl font-bold text-foreground">Invitopia Mini</span>
         </Link>
         
+        <nav className="hidden md:flex items-center space-x-8">
+          <Link to="/" className="text-foreground hover:text-accent transition-colors">
+            Accueil
+          </Link>
+          <Link to="/events" className="text-foreground hover:text-accent transition-colors">
+            Événements Publics
+          </Link>
+          <Link to="#features" className="text-foreground hover:text-accent transition-colors">
+            Fonctionnalités
+          </Link>
+        </nav>
+        
         <div className="hidden md:flex items-center space-x-4">
         {user ? (
           <div className="flex items-center space-x-2 md:space-x-3">
