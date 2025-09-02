@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogOut, User } from "lucide-react";
+import MobileMenu from "@/components/MobileMenu";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -32,31 +33,37 @@ const Navbar = () => {
           </Link>
         </nav>
         
-        <div className="hidden md:flex items-center space-x-4">
-        {user ? (
-          <div className="flex items-center space-x-2 md:space-x-3">
-            <div className="hidden sm:flex items-center space-x-2 text-sm text-muted-foreground">
-              <User className="w-4 h-4" />
-              <span className="hidden md:inline">{user.email}</span>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleSignOut}
-              className="flex items-center space-x-2"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Déconnexion</span>
-            </Button>
-            <Button asChild className="bg-gradient-primary hover:shadow-gold transition-smooth transform hover:scale-105">
-              <Link to="/admin">Dashboard</Link>
-            </Button>
+        <div className="flex items-center space-x-4">
+          {/* Desktop Menu */}
+          <div className="hidden md:flex items-center space-x-4">
+            {user ? (
+              <div className="flex items-center space-x-2 md:space-x-3">
+                <div className="hidden lg:flex items-center space-x-2 text-sm text-muted-foreground">
+                  <User className="w-4 h-4" />
+                  <span>{user.email}</span>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleSignOut}
+                  className="hidden lg:flex items-center space-x-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Déconnexion</span>
+                </Button>
+                <Button asChild className="bg-gradient-primary hover:shadow-gold transition-smooth transform hover:scale-105">
+                  <Link to="/admin">Dashboard</Link>
+                </Button>
+              </div>
+            ) : (
+              <Button asChild className="bg-gradient-primary hover:shadow-gold transition-smooth transform hover:scale-105">
+                <Link to="/auth">Connexion</Link>
+              </Button>
+            )}
           </div>
-        ) : (
-          <Button asChild className="bg-gradient-primary hover:shadow-gold transition-smooth transform hover:scale-105">
-            <Link to="/auth">Connexion</Link>
-          </Button>
-        )}
+          
+          {/* Mobile Menu */}
+          <MobileMenu />
         </div>
       </div>
     </nav>

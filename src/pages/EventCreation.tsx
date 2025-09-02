@@ -284,28 +284,33 @@ const EventCreation = () => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-end mt-8">
-            <Button 
-              type="button"
-              variant="outline" 
-              size="lg"
-              asChild
-              disabled={isLoading}
-            >
-              <Link to="/admin">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Annuler
-              </Link>
-            </Button>
-            <Button 
-              type="submit"
-              size="lg" 
-              className="bg-gradient-primary hover:shadow-gold transition-smooth"
-              disabled={isLoading}
-            >
-              {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Créer l'Événement
-            </Button>
+          {/* Mobile-optimized action buttons */}
+          <div className="sticky bottom-4 sm:static bg-background/95 sm:bg-transparent backdrop-blur-sm sm:backdrop-blur-none p-4 sm:p-0 rounded-lg sm:rounded-none border sm:border-0 shadow-elegant sm:shadow-none">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end">
+              <Button 
+                type="button"
+                variant="outline" 
+                size="lg"
+                asChild
+                disabled={isLoading}
+                className="w-full sm:w-auto touch-target"
+              >
+                <Link to="/admin">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Annuler
+                </Link>
+              </Button>
+              <Button 
+                type="submit"
+                size="lg" 
+                className="w-full sm:w-auto bg-gradient-primary hover:shadow-gold transition-smooth touch-target"
+                disabled={isLoading}
+              >
+                {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                <span className="hidden sm:inline">Créer l'Événement</span>
+                <span className="sm:hidden">Créer</span>
+              </Button>
+            </div>
           </div>
         </form>
       </div>
