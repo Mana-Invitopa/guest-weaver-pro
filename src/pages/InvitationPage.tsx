@@ -153,9 +153,15 @@ const InvitationPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
-      {/* Hero Section with Event Details */}
-      <div className="relative h-96 overflow-hidden">
-        {event.background_image_url ? (
+      {/* Hero Section - Clean Cover Image */}
+      <div className="relative h-screen overflow-hidden">
+        {(event as any).invitation_design_url ? (
+          <img 
+            src={(event as any).invitation_design_url} 
+            alt={`Invitation ${event.title}`}
+            className="w-full h-full object-contain bg-muted"
+          />
+        ) : event.background_image_url ? (
           <img 
             src={event.background_image_url} 
             alt={event.title}
@@ -164,24 +170,35 @@ const InvitationPage = () => {
         ) : (
           <div className="w-full h-full bg-gradient-hero"></div>
         )}
-        <div className="absolute inset-0 bg-black/50"></div>
-        <div className="absolute inset-0 flex items-center justify-center text-center px-6">
-          <div className="max-w-2xl">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+      </div>
+
+      {/* Event Details Section - Below the Cover */}
+      <div className="bg-background border-t border-border">
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               {event.title}
             </h1>
-            <div className="flex flex-wrap justify-center gap-6 text-white/90">
+            <div className="flex flex-wrap justify-center gap-6 text-muted-foreground">
               <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                <span>{new Date(event.date_time).toLocaleDateString('fr-FR')}</span>
+                <Calendar className="w-5 h-5 text-accent" />
+                <span className="font-medium">{new Date(event.date_time).toLocaleDateString('fr-FR', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5" />
-                <span>{new Date(event.date_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</span>
+                <Clock className="w-5 h-5 text-accent" />
+                <span className="font-medium">{new Date(event.date_time).toLocaleTimeString('fr-FR', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}</span>
               </div>
               <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5" />
-                <span>{event.location}</span>
+                <MapPin className="w-5 h-5 text-accent" />
+                <span className="font-medium">{event.location}</span>
               </div>
             </div>
           </div>

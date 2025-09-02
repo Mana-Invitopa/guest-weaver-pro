@@ -10,6 +10,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import EventCoverUpload from "@/components/EventCoverUpload";
+import InvitationDesignUpload from "@/components/InvitationDesignUpload";
 import { useCreateEvent } from "@/hooks/useEvents";
 
 const EventCreation = () => {
@@ -25,6 +26,7 @@ const EventCreation = () => {
     location: "",
     template: "default",
     background_image_url: "",
+    invitation_design_url: "",
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -57,6 +59,7 @@ const EventCreation = () => {
         date_time: dateTime,
         template: formData.template,
         background_image_url: formData.background_image_url || undefined,
+        invitation_design_url: formData.invitation_design_url || undefined,
       };
 
       await createEventMutation.mutateAsync(eventData);
@@ -178,6 +181,11 @@ const EventCreation = () => {
                 </CardContent>
               </Card>
 
+              <InvitationDesignUpload 
+                onImageUploaded={(url) => handleInputChange("invitation_design_url", url)}
+                currentImageUrl={formData.invitation_design_url}
+              />
+
               <EventCoverUpload 
                 onImageUploaded={(url) => handleInputChange("background_image_url", url)}
                 currentImageUrl={formData.background_image_url}
@@ -216,43 +224,60 @@ const EventCreation = () => {
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="relative h-64 overflow-hidden rounded-b-lg">
-                    {formData.background_image_url ? (
+                    {formData.invitation_design_url ? (
                       <img 
-                        src={formData.background_image_url} 
-                        alt="Aperçu couverture" 
-                        className="w-full h-full object-cover"
+                        src={formData.invitation_design_url} 
+                        alt="Aperçu invitation" 
+                        className="w-full h-full object-contain bg-muted"
                       />
+                    ) : formData.background_image_url ? (
+                      <>
+                        <img 
+                          src={formData.background_image_url} 
+                          alt="Aperçu couverture" 
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40"></div>
+                        <div className="absolute inset-0 flex items-center justify-center text-center px-6">
+                          <div>
+                            <h3 className="text-2xl font-bold text-white mb-2">
+                              {formData.title || "Titre de votre événement"}
+                            </h3>
+                            <div className="flex flex-col gap-2 text-white/90 text-sm">
+                              {formData.date && (
+                                <div className="flex items-center justify-center gap-2">
+                                  <CalendarIcon className="w-4 h-4" />
+                                  <span>{new Date(formData.date).toLocaleDateString('fr-FR')}</span>
+                                </div>
+                              )}
+                              {formData.time && (
+                                <div className="flex items-center justify-center gap-2">
+                                  <Clock className="w-4 h-4" />
+                                  <span>{formData.time}</span>
+                                </div>
+                              )}
+                              {formData.location && (
+                                <div className="flex items-center justify-center gap-2">
+                                  <MapPin className="w-4 h-4" />
+                                  <span className="text-xs">{formData.location}</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </>
                     ) : (
-                      <div className="absolute inset-0 bg-gradient-hero"></div>
-                    )}
-                    <div className="absolute inset-0 bg-black/40"></div>
-                    <div className="absolute inset-0 flex items-center justify-center text-center px-6">
-                      <div>
-                        <h3 className="text-2xl font-bold text-white mb-2">
-                          {formData.title || "Titre de votre événement"}
-                        </h3>
-                        <div className="flex flex-col gap-2 text-white/90 text-sm">
-                          {formData.date && (
-                            <div className="flex items-center justify-center gap-2">
-                              <CalendarIcon className="w-4 h-4" />
-                              <span>{new Date(formData.date).toLocaleDateString('fr-FR')}</span>
-                            </div>
-                          )}
-                          {formData.time && (
-                            <div className="flex items-center justify-center gap-2">
-                              <Clock className="w-4 h-4" />
-                              <span>{formData.time}</span>
-                            </div>
-                          )}
-                          {formData.location && (
-                            <div className="flex items-center justify-center gap-2">
-                              <MapPin className="w-4 h-4" />
-                              <span className="text-xs">{formData.location}</span>
-                            </div>
-                          )}
+                      <div className="absolute inset-0 bg-gradient-hero flex items-center justify-center text-center px-6">
+                        <div>
+                          <h3 className="text-2xl font-bold text-white mb-2">
+                            {formData.title || "Titre de votre événement"}
+                          </h3>
+                          <p className="text-white/90 text-sm">
+                            Ajoutez un design d'invitation ou une image de couverture
+                          </p>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

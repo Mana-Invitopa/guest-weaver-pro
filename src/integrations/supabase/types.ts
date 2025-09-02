@@ -118,6 +118,7 @@ export type Database = {
           event_type: string | null
           featured: boolean | null
           id: string
+          invitation_design_url: string | null
           location: string
           max_guests: number | null
           privacy: string | null
@@ -138,6 +139,7 @@ export type Database = {
           event_type?: string | null
           featured?: boolean | null
           id?: string
+          invitation_design_url?: string | null
           location: string
           max_guests?: number | null
           privacy?: string | null
@@ -158,6 +160,7 @@ export type Database = {
           event_type?: string | null
           featured?: boolean | null
           id?: string
+          invitation_design_url?: string | null
           location?: string
           max_guests?: number | null
           privacy?: string | null

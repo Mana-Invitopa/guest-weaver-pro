@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEvent, useUpdateEvent, useDeleteEvent } from "@/hooks/useEvents";
 import { useEventTables, useCreateEventTable } from "@/hooks/useEventTables";
 import EventCoverUpload from "./EventCoverUpload";
+import InvitationDesignUpload from "./InvitationDesignUpload";
 import EventTypeSelector from "./EventTypeSelector";
 
 interface EventEditorProps {
@@ -36,6 +37,7 @@ const EventEditor = ({ eventId, onSave, onDelete }: EventEditorProps) => {
     max_guests: "",
     status: "draft" as string,
     background_image_url: "",
+    invitation_design_url: "",
     event_type: ""
   });
   
@@ -55,6 +57,7 @@ const EventEditor = ({ eventId, onSave, onDelete }: EventEditorProps) => {
         max_guests: event.max_guests?.toString() || "",
         status: event.status || "draft",
         background_image_url: event.background_image_url || "",
+        invitation_design_url: (event as any).invitation_design_url || "",
         event_type: (event as any).event_type || ""
       });
     }
@@ -200,10 +203,11 @@ const EventEditor = ({ eventId, onSave, onDelete }: EventEditorProps) => {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="general">Général</TabsTrigger>
           <TabsTrigger value="type">Type</TabsTrigger>
-          <TabsTrigger value="image">Image</TabsTrigger>
+          <TabsTrigger value="cover">Couverture</TabsTrigger>
+          <TabsTrigger value="invitation">Invitation</TabsTrigger>
           <TabsTrigger value="tables">Tables</TabsTrigger>
           <TabsTrigger value="advanced">Avancé</TabsTrigger>
         </TabsList>
@@ -311,7 +315,7 @@ const EventEditor = ({ eventId, onSave, onDelete }: EventEditorProps) => {
           />
         </TabsContent>
 
-        <TabsContent value="image">
+        <TabsContent value="cover">
           <Card className="shadow-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -319,7 +323,7 @@ const EventEditor = ({ eventId, onSave, onDelete }: EventEditorProps) => {
                 Image de Couverture
               </CardTitle>
               <CardDescription>
-                Ajoutez une image de couverture pour votre événement
+                Image d'arrière-plan pour l'en-tête de votre événement (optionnel si vous avez un design d'invitation)
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -330,6 +334,14 @@ const EventEditor = ({ eventId, onSave, onDelete }: EventEditorProps) => {
               />
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="invitation">
+          <InvitationDesignUpload 
+            eventId={eventId} 
+            currentImageUrl={formData.invitation_design_url}
+            onImageUploaded={(url) => handleInputChange('invitation_design_url', url)}
+          />
         </TabsContent>
 
         <TabsContent value="tables">
