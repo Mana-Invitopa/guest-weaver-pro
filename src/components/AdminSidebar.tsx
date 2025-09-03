@@ -34,7 +34,6 @@ const eventManagementItems = [
 
 const systemItems = [
   { title: "Paramètres", url: "/admin/settings", icon: Settings },
-  { title: "Intégrations", url: "/admin/integrations", icon: Zap },
 ];
 
 export function AdminSidebar() {

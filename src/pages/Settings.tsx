@@ -10,9 +10,10 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile, useCreateProfile, useUpdateProfile } from "@/hooks/useProfiles";
-import { User, Bell, Shield, Palette, Globe, Download, Trash2, Save } from "lucide-react";
+import { User, Bell, Shield, Palette, Globe, Download, Trash2, Save, Zap, MessageCircle, Send, Mail, Smartphone, Settings as SettingsIcon, Key, CheckCircle, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import ProfilePhotoUpload from "@/components/ProfilePhotoUpload";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Settings = () => {
   const { user, signOut } = useAuth();
@@ -34,9 +35,37 @@ const Settings = () => {
   });
 
   const [preferences, setPreferences] = useState({
-    theme: "light",
+    theme: "system",
     language: "fr",
     timezone: "Europe/Paris",
+  });
+
+  const [integrations, setIntegrations] = useState({
+    whatsapp: { enabled: false, configured: false },
+    telegram: { enabled: false, configured: false },
+    sms: { enabled: false, configured: false },
+    email: { enabled: true, configured: true }
+  });
+
+  const [integrationFormData, setIntegrationFormData] = useState({
+    whatsapp: {
+      apiKey: "",
+      webhookUrl: "",
+      phoneNumber: "",
+    },
+    telegram: {
+      botToken: "",
+      webhookUrl: "",
+    },
+    sms: {
+      apiKey: "",
+      senderName: "",
+      provider: "twilio"
+    },
+    email: {
+      fromName: "InviTopia",
+      replyTo: "",
+    }
   });
 
   useEffect(() => {
@@ -74,13 +103,40 @@ const Settings = () => {
     }
   };
 
-  const getUserInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+  const handleToggleIntegration = (integration: keyof typeof integrations) => {
+    setIntegrations(prev => ({
+      ...prev,
+      [integration]: {
+        ...prev[integration],
+        enabled: !prev[integration].enabled
+      }
+    }));
+  };
+
+  const handleSaveIntegration = async (integration: keyof typeof integrations) => {
+    try {
+      setIntegrations(prev => ({
+        ...prev,
+        [integration]: {
+          ...prev[integration],
+          configured: true
+        }
+      }));
+
+      toast.success(`L'intégration ${integration.toUpperCase()} a été configurée avec succès.`);
+    } catch (error) {
+      toast.error("Impossible de sauvegarder la configuration.");
+    }
+  };
+
+  const updateIntegrationFormData = (integration: string, field: string, value: string) => {
+    setIntegrationFormData(prev => ({
+      ...prev,
+      [integration]: {
+        ...prev[integration as keyof typeof prev],
+        [field]: value
+      }
+    }));
   };
 
   if (profileLoading) {
@@ -105,23 +161,11 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="profile" className="flex items-center gap-2">
-            <User className="w-4 h-4" />
-            Profil
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="flex items-center gap-2">
-            <Bell className="w-4 h-4" />
-            Notifications
-          </TabsTrigger>
-          <TabsTrigger value="preferences" className="flex items-center gap-2">
-            <Palette className="w-4 h-4" />
-            Préférences
-          </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <Shield className="w-4 h-4" />
-            Sécurité
-          </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="profile">Profil</TabsTrigger>
+          <TabsTrigger value="appearance">Apparence</TabsTrigger>
+          <TabsTrigger value="integrations">Intégrations</TabsTrigger>
+          <TabsTrigger value="security">Sécurité</TabsTrigger>
         </TabsList>
 
         {/* Profile Tab */}
@@ -191,7 +235,7 @@ const Settings = () => {
                 <Avatar className="w-20 h-20 mx-auto mb-4">
                   <AvatarImage src={profileForm.avatar_url} />
                   <AvatarFallback className="text-lg bg-gradient-primary text-white">
-                    {profileForm.full_name ? getUserInitials(profileForm.full_name) : 'U'}
+                    {profileForm.full_name ? profileForm.full_name.split(' ').map(word => word.charAt(0)).join('').toUpperCase().slice(0, 2) : 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <CardTitle>{profileForm.full_name || 'Nom non défini'}</CardTitle>
@@ -204,107 +248,154 @@ const Settings = () => {
           </div>
         </TabsContent>
 
-        {/* Notifications Tab */}
-        <TabsContent value="notifications">
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle>Préférences de notification</CardTitle>
-              <CardDescription>
-                Configurez quand et comment vous souhaitez être notifié
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {Object.entries(notifications).map(([key, value]) => (
-                <div key={key} className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label className="text-base">
-                      {key === 'email_invitations' && 'Notifications d\'invitation par e-mail'}
-                      {key === 'event_reminders' && 'Rappels d\'événements'}
-                      {key === 'guest_responses' && 'Réponses des invités'}
-                      {key === 'system_updates' && 'Mises à jour système'}
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      {key === 'email_invitations' && 'Recevoir les notifications pour les nouvelles invitations'}
-                      {key === 'event_reminders' && 'Recevoir des rappels avant vos événements'}
-                      {key === 'guest_responses' && 'Être notifié des RSVP et des réponses'}
-                      {key === 'system_updates' && 'Recevoir les notifications de mise à jour'}
-                    </p>
-                  </div>
-                  <Switch
-                    checked={value}
-                    onCheckedChange={(checked) => 
-                      setNotifications(prev => ({
-                        ...prev,
-                        [key]: checked
-                      }))
-                    }
-                  />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+        {/* Appearance Tab */}
+        <TabsContent value="appearance">
+          <ThemeToggle />
         </TabsContent>
 
-        {/* Preferences Tab */}
-        <TabsContent value="preferences">
-          <Card className="shadow-card">
-            <CardHeader>
-              <CardTitle>Préférences de l'application</CardTitle>
-              <CardDescription>
-                Personnalisez votre expérience utilisateur
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Thème</Label>
-                  <select 
-                    className="w-full p-2 border rounded-md bg-background"
-                    value={preferences.theme}
-                    onChange={(e) => setPreferences(prev => ({
-                      ...prev,
-                      theme: e.target.value
-                    }))}
-                  >
-                    <option value="light">Clair</option>
-                    <option value="dark">Sombre</option>
-                    <option value="system">Système</option>
-                  </select>
-                </div>
+        {/* Integrations Tab */}
+        <TabsContent value="integrations" className="space-y-6">
+          <div className="flex items-center space-x-3 mb-6">
+            <Zap className="w-6 h-6 text-primary" />
+            <div>
+              <h2 className="text-xl font-semibold text-foreground">Intégrations API</h2>
+              <p className="text-muted-foreground">
+                Configurez vos intégrations pour partager les invitations via différents canaux
+              </p>
+            </div>
+          </div>
 
-                <div className="space-y-2">
-                  <Label>Langue</Label>
-                  <select 
-                    className="w-full p-2 border rounded-md bg-background"
-                    value={preferences.language}
-                    onChange={(e) => setPreferences(prev => ({
-                      ...prev,
-                      language: e.target.value
-                    }))}
-                  >
-                    <option value="fr">Français</option>
-                    <option value="en">English</option>
-                  </select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Fuseau horaire</Label>
-                  <select 
-                    className="w-full p-2 border rounded-md bg-background"
-                    value={preferences.timezone}
-                    onChange={(e) => setPreferences(prev => ({
-                      ...prev,
-                      timezone: e.target.value
-                    }))}
-                  >
-                    <option value="Europe/Paris">Europe/Paris</option>
-                    <option value="Europe/London">Europe/London</option>
-                    <option value="America/New_York">America/New_York</option>
-                  </select>
-                </div>
+          {/* WhatsApp Business API */}
+          <IntegrationCard
+            title="WhatsApp Business"
+            description="Envoyez des invitations via l'API WhatsApp Business"
+            icon={MessageCircle}
+            integration="whatsapp"
+          >
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="whatsapp-api-key">Clé API WhatsApp Business</Label>
+                <Input
+                  id="whatsapp-api-key"
+                  type="password"
+                  placeholder="Entrez votre clé API"
+                  value={integrationFormData.whatsapp.apiKey}
+                  onChange={(e) => updateIntegrationFormData("whatsapp", "apiKey", e.target.value)}
+                />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <Label htmlFor="whatsapp-phone">Numéro de téléphone</Label>
+                <Input
+                  id="whatsapp-phone"
+                  placeholder="+33123456789"
+                  value={integrationFormData.whatsapp.phoneNumber}
+                  onChange={(e) => updateIntegrationFormData("whatsapp", "phoneNumber", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="whatsapp-webhook">URL Webhook (optionnel)</Label>
+                <Input
+                  id="whatsapp-webhook"
+                  placeholder="https://votre-webhook.com/whatsapp"
+                  value={integrationFormData.whatsapp.webhookUrl}
+                  onChange={(e) => updateIntegrationFormData("whatsapp", "webhookUrl", e.target.value)}
+                />
+              </div>
+            </div>
+          </IntegrationCard>
+
+          {/* Telegram Bot */}
+          <IntegrationCard
+            title="Telegram Bot"
+            description="Créez un bot Telegram pour envoyer des invitations"
+            icon={Send}
+            integration="telegram"
+          >
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="telegram-token">Token du Bot Telegram</Label>
+                <Input
+                  id="telegram-token"
+                  type="password"
+                  placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+                  value={integrationFormData.telegram.botToken}
+                  onChange={(e) => updateIntegrationFormData("telegram", "botToken", e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Obtenez votre token en créant un bot via @BotFather sur Telegram
+                </p>
+              </div>
+              <div>
+                <Label htmlFor="telegram-webhook">URL Webhook (optionnel)</Label>
+                <Input
+                  id="telegram-webhook"
+                  placeholder="https://votre-webhook.com/telegram"
+                  value={integrationFormData.telegram.webhookUrl}
+                  onChange={(e) => updateIntegrationFormData("telegram", "webhookUrl", e.target.value)}
+                />
+              </div>
+            </div>
+          </IntegrationCard>
+
+          {/* SMS Integration */}
+          <IntegrationCard
+            title="SMS (Twilio/Vonage)"
+            description="Envoyez des invitations par SMS"
+            icon={Smartphone}
+            integration="sms"
+          >
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="sms-api-key">Clé API SMS</Label>
+                <Input
+                  id="sms-api-key"
+                  type="password"
+                  placeholder="Clé API de votre fournisseur SMS"
+                  value={integrationFormData.sms.apiKey}
+                  onChange={(e) => updateIntegrationFormData("sms", "apiKey", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="sms-sender">Nom de l'expéditeur</Label>
+                <Input
+                  id="sms-sender"
+                  placeholder="InviTopia"
+                  value={integrationFormData.sms.senderName}
+                  onChange={(e) => updateIntegrationFormData("sms", "senderName", e.target.value)}
+                />
+              </div>
+            </div>
+          </IntegrationCard>
+
+          {/* Email Configuration */}
+          <IntegrationCard
+            title="Configuration Email"
+            description="Personnalisez vos paramètres d'envoi d'emails"
+            icon={Mail}
+            integration="email"
+          >
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="email-from">Nom de l'expéditeur</Label>
+                <Input
+                  id="email-from"
+                  placeholder="InviTopia Events"
+                  value={integrationFormData.email.fromName}
+                  onChange={(e) => updateIntegrationFormData("email", "fromName", e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="email-reply">Email de réponse (optionnel)</Label>
+                <Input
+                  id="email-reply"
+                  type="email"
+                  placeholder="contact@votredomaine.com"
+                  value={integrationFormData.email.replyTo}
+                  onChange={(e) => updateIntegrationFormData("email", "replyTo", e.target.value)}
+                />
+              </div>
+            </div>
+          </IntegrationCard>
         </TabsContent>
 
         {/* Security Tab */}

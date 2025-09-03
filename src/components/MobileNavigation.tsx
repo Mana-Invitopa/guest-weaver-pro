@@ -42,6 +42,12 @@ const MobileNavigation = () => {
       label: "Analytics",
       href: "/admin/analytics",
       active: location.pathname === "/admin/analytics"
+    },
+    {
+      icon: Settings,
+      label: "Réglages",
+      href: "/admin/settings",
+      active: location.pathname.includes("/admin/settings")
     }
   ];
 
