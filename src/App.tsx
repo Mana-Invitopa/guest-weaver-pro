@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboardLayout from "./pages/AdminDashboardLayout";
 import Settings from "./pages/Settings";
+import IntegrationsSettings from "./pages/IntegrationsSettings";
 import Analytics from "./pages/Analytics";
 import PublicEvents from "./pages/PublicEvents";
 import PublicEventDetail from "./pages/PublicEventDetail";
@@ -155,7 +156,7 @@ const App = () => (
               } 
             />
             <Route 
-              path="/admin/events/:eventId/settings" 
+              path="/admin/events/:eventId/share" 
               element={
                 <ProtectedRoute>
                   <AdminDashboardLayout>
@@ -200,6 +201,16 @@ const App = () => (
                 <ProtectedRoute>
                   <AdminDashboardLayout>
                     <Settings />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/integrations" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <IntegrationsSettings />
                   </AdminDashboardLayout>
                 </ProtectedRoute>
               } 

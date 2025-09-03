@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, QrCode, UserCheck, Table, Mail, FileText, Settings, Eye } from "lucide-react";
+import { Calendar, Users, QrCode, UserCheck, Table, Mail, FileText, Settings, Eye, Share } from "lucide-react";
 import { useEvent } from "@/hooks/useEvents";
 import { useInvitees } from "@/hooks/useInvitees";
 import EventEditor from "./EventEditor";
@@ -12,6 +12,7 @@ import QRCodeGenerator from "./QRCodeGenerator";
 import CheckInSystem from "./CheckInSystem";
 import TableManagement from "./TableManagement";
 import InvitationSender from "./InvitationSender";
+import InvitationSharing from "./InvitationSharing";
 import GuestbookManagement from "./GuestbookManagement";
 import EnhancedThemeSelector from "./EnhancedThemeSelector";
 import DrinkPreferencesManager from "./DrinkPreferencesManager";
@@ -43,6 +44,7 @@ const EventManagementDashboard = () => {
     if (path.includes('/checkin')) return 'checkin';
     if (path.includes('/tables')) return 'tables';
     if (path.includes('/invitations')) return 'invitations';
+    if (path.includes('/share')) return 'share';
     if (path.includes('/guestbook')) return 'guestbook';
     if (path.includes('/settings')) return 'settings';
     return 'overview';
@@ -115,7 +117,7 @@ const EventManagementDashboard = () => {
 
       {/* Management Tabs */}
       <Tabs value={getActiveTab()} className="space-y-4">
-        <TabsList className="grid grid-cols-4 lg:grid-cols-8 w-full">
+        <TabsList className="grid grid-cols-4 lg:grid-cols-9 w-full">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             Vue d'ensemble
@@ -139,6 +141,10 @@ const EventManagementDashboard = () => {
           <TabsTrigger value="invitations" className="flex items-center gap-2">
             <Mail className="w-4 h-4" />
             Invitations
+          </TabsTrigger>
+          <TabsTrigger value="share" className="flex items-center gap-2">
+            <Share className="w-4 h-4" />
+            Partager
           </TabsTrigger>
           <TabsTrigger value="guestbook" className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
@@ -205,6 +211,30 @@ const EventManagementDashboard = () => {
             </CardHeader>
             <CardContent>
               <InvitationSender eventId={eventId} invitees={invitees} />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="share">
+          <Card className="shadow-card">
+            <CardHeader>
+              <CardTitle>Partage d'Invitations</CardTitle>
+              <CardDescription>
+                Partagez les invitations via WhatsApp, Telegram, SMS et Email
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <InvitationSharing 
+                eventId={eventId}
+                eventTitle={event.title}
+                invitationUrl={`${window.location.origin}/invitation/`}
+                invitees={invitees.map(i => ({
+                  id: i.id,
+                  name: i.name,
+                  email: i.email,
+                  phone: i.phone
+                }))}
+              />
             </CardContent>
           </Card>
         </TabsContent>

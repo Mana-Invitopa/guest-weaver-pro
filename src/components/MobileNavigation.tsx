@@ -6,7 +6,8 @@ import {
   Users, 
   BarChart3, 
   Settings,
-  Plus 
+  Plus,
+  Zap 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,8 +33,8 @@ const MobileNavigation = () => {
     {
       icon: Plus,
       label: "Créer",
-      href: "/admin/create-event",
-      active: location.pathname === "/admin/create-event",
+      href: "/admin/events/new",
+      active: location.pathname === "/admin/events/new",
       isAction: true
     },
     {
@@ -41,12 +42,6 @@ const MobileNavigation = () => {
       label: "Analytics",
       href: "/admin/analytics",
       active: location.pathname === "/admin/analytics"
-    },
-    {
-      icon: Settings,
-      label: "Réglages",
-      href: "/admin/settings",
-      active: location.pathname === "/admin/settings"
     }
   ];
 

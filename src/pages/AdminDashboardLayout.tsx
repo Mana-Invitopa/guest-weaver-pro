@@ -15,30 +15,30 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        {/* Desktop Sidebar */}
-        {!isMobile && <AdminSidebar />}
+        {/* Desktop Sidebar - Only show on desktop (lg+) */}
+        <div className="hidden lg:flex">
+          <AdminSidebar />
+        </div>
         
         <div className="flex-1 flex flex-col">
-          {/* Mobile Header */}
-          {isMobile && (
+          {/* Mobile/Tablet Header - Only show below desktop */}
+          <div className="lg:hidden">
             <header className="h-14 flex items-center justify-between border-b bg-card px-4 sticky top-0 z-40">
               <SidebarTrigger className="touch-target" />
               <h1 className="font-semibold text-foreground text-lg">Dashboard</h1>
               <div className="w-8"></div>
             </header>
-          )}
+          </div>
 
-          {/* Desktop Navbar */}
-          {!isMobile && (
-            <div className="border-b bg-card">
-              <Navbar />
-            </div>
-          )}
+          {/* Desktop Navbar - Only show on desktop */}
+          <div className="hidden lg:block border-b bg-card">
+            <Navbar />
+          </div>
 
           {/* Main content */}
           <main className={cn(
             "flex-1 overflow-x-hidden",
-            isMobile ? "p-4 pb-20 mobile-scroll" : "p-6"
+            "p-4 pb-20 mobile-scroll lg:p-6 lg:pb-6"
           )}>
             <div className="w-full max-w-full">
               {children}
@@ -46,8 +46,10 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
           </main>
         </div>
         
-        {/* Mobile Navigation */}
-        <MobileNavigation />
+        {/* Mobile Navigation - Only show on mobile/tablet */}
+        <div className="lg:hidden">
+          <MobileNavigation />
+        </div>
       </div>
     </SidebarProvider>
   );

@@ -146,9 +146,34 @@ All colors MUST be HSL.
     scroll-behavior: smooth;
   }
   
-  /* Mobile touch targets */
-  .touch-target {
-    min-height: 44px;
-    min-width: 44px;
+  /* Responsive mobile navigation - only show bottom navigation on mobile/tablet */
+  .lg\\:hidden {
+    @apply lg:hidden;
+  }
+  
+  /* Enhanced mobile optimizations */
+  @media (max-width: 1023px) {
+    /* Mobile-specific enhancements */
+    .mobile-optimized {
+      @apply text-sm;
+    }
+    
+    /* Better touch targets on mobile */
+    .touch-friendly {
+      @apply min-h-[44px] min-w-[44px];
+    }
+  }
+  
+  /* Desktop-specific styles */
+  @media (min-width: 1024px) {
+    /* Hide mobile navigation on desktop */
+    .mobile-nav-hidden {
+      @apply hidden;
+    }
+    
+    /* Desktop sidebar always visible */
+    .desktop-sidebar {
+      @apply flex;
+    }
   }
 }

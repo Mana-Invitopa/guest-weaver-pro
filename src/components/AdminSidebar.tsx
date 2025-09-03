@@ -3,7 +3,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import {
   Calendar, Users, Settings, BarChart3, QrCode, 
   CheckCircle, Plus, Edit, Table, Mail, ChevronDown,
-  UserCheck, FileText, Home, Archive
+  UserCheck, FileText, Home, Archive, Share, Zap
 } from "lucide-react";
 
 import {
@@ -34,6 +34,7 @@ const eventManagementItems = [
 
 const systemItems = [
   { title: "Paramètres", url: "/admin/settings", icon: Settings },
+  { title: "Intégrations", url: "/admin/integrations", icon: Zap },
 ];
 
 export function AdminSidebar() {
@@ -58,6 +59,7 @@ export function AdminSidebar() {
     { title: "Check-in", url: `/admin/events/${eventId}/checkin`, icon: UserCheck },
     { title: "Tables", url: `/admin/events/${eventId}/tables`, icon: Table },
     { title: "Invitations", url: `/admin/events/${eventId}/invitations`, icon: Mail },
+    { title: "Partage Invitations", url: `/admin/events/${eventId}/share`, icon: Share },
     { title: "Collaborateurs", url: `/admin/events/${eventId}/collaborators`, icon: Users },
     { title: "Livre d'Or", url: `/admin/events/${eventId}/guestbook`, icon: FileText },
     { title: "Paramètres", url: `/admin/events/${eventId}/settings`, icon: Settings },
