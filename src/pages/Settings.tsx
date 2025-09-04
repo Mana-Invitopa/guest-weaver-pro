@@ -14,6 +14,7 @@ import { User, Bell, Shield, Palette, Globe, Download, Trash2, Save, Zap, Messag
 import { toast } from "sonner";
 import ProfilePhotoUpload from "@/components/ProfilePhotoUpload";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import IntegrationCard from "@/components/IntegrationCard";
 
 const Settings = () => {
   const { user, signOut } = useAuth();
@@ -271,6 +272,9 @@ const Settings = () => {
             description="Envoyez des invitations via l'API WhatsApp Business"
             icon={MessageCircle}
             integration="whatsapp"
+            integrations={integrations}
+            onToggleIntegration={handleToggleIntegration}
+            onSaveIntegration={handleSaveIntegration}
           >
             <div className="space-y-4">
               <div>
@@ -310,6 +314,9 @@ const Settings = () => {
             description="Créez un bot Telegram pour envoyer des invitations"
             icon={Send}
             integration="telegram"
+            integrations={integrations}
+            onToggleIntegration={handleToggleIntegration}
+            onSaveIntegration={handleSaveIntegration}
           >
             <div className="space-y-4">
               <div>
@@ -343,6 +350,9 @@ const Settings = () => {
             description="Envoyez des invitations par SMS"
             icon={Smartphone}
             integration="sms"
+            integrations={integrations}
+            onToggleIntegration={handleToggleIntegration}
+            onSaveIntegration={handleSaveIntegration}
           >
             <div className="space-y-4">
               <div>
@@ -373,6 +383,9 @@ const Settings = () => {
             description="Personnalisez vos paramètres d'envoi d'emails"
             icon={Mail}
             integration="email"
+            integrations={integrations}
+            onToggleIntegration={handleToggleIntegration}
+            onSaveIntegration={handleSaveIntegration}
           >
             <div className="space-y-4">
               <div>
