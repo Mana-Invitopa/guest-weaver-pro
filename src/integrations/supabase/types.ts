@@ -54,6 +54,13 @@ export type Database = {
             foreignKeyName: "event_collaborators_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "public_event_preview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_collaborators_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "public_events"
             referencedColumns: ["id"]
           },
@@ -102,6 +109,13 @@ export type Database = {
             foreignKeyName: "event_tables_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "public_event_preview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_tables_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "public_events"
             referencedColumns: ["id"]
           },
@@ -119,6 +133,7 @@ export type Database = {
           featured: boolean | null
           id: string
           invitation_design_url: string | null
+          is_public: boolean | null
           location: string
           max_guests: number | null
           privacy: string | null
@@ -140,6 +155,7 @@ export type Database = {
           featured?: boolean | null
           id?: string
           invitation_design_url?: string | null
+          is_public?: boolean | null
           location: string
           max_guests?: number | null
           privacy?: string | null
@@ -161,6 +177,7 @@ export type Database = {
           featured?: boolean | null
           id?: string
           invitation_design_url?: string | null
+          is_public?: boolean | null
           location?: string
           max_guests?: number | null
           privacy?: string | null
@@ -207,6 +224,13 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guestbook_entries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "public_event_preview"
             referencedColumns: ["id"]
           },
           {
@@ -315,6 +339,13 @@ export type Database = {
             foreignKeyName: "invitees_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "public_event_preview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitees_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "public_events"
             referencedColumns: ["id"]
           },
@@ -399,6 +430,13 @@ export type Database = {
             foreignKeyName: "rsvps_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
+            referencedRelation: "public_event_preview"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
             referencedRelation: "public_events"
             referencedColumns: ["id"]
           },
@@ -413,6 +451,45 @@ export type Database = {
       }
     }
     Views: {
+      public_event_preview: {
+        Row: {
+          background_image_url: string | null
+          current_guests: number | null
+          date_time: string | null
+          description: string | null
+          event_type: string | null
+          id: string | null
+          location: string | null
+          max_guests: number | null
+          theme: string | null
+          title: string | null
+        }
+        Insert: {
+          background_image_url?: string | null
+          current_guests?: number | null
+          date_time?: string | null
+          description?: string | null
+          event_type?: string | null
+          id?: string | null
+          location?: string | null
+          max_guests?: number | null
+          theme?: string | null
+          title?: string | null
+        }
+        Update: {
+          background_image_url?: string | null
+          current_guests?: number | null
+          date_time?: string | null
+          description?: string | null
+          event_type?: string | null
+          id?: string | null
+          location?: string | null
+          max_guests?: number | null
+          theme?: string | null
+          title?: string | null
+        }
+        Relationships: []
+      }
       public_events: {
         Row: {
           background_image_url: string | null
