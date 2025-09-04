@@ -16,6 +16,7 @@ import InvitationSharing from "./InvitationSharing";
 import GuestbookManagement from "./GuestbookManagement";
 import EnhancedThemeSelector from "./EnhancedThemeSelector";
 import DrinkPreferencesManager from "./DrinkPreferencesManager";
+import CollaboratorManagement from "./CollaboratorManagement";
 
 const EventManagementDashboard = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -263,19 +264,7 @@ const EventManagementDashboard = () => {
             
             <DrinkPreferencesManager eventId={eventId} />
             
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>Paramètres Avancés</CardTitle>
-                <CardDescription>
-                  Configuration supplémentaire de l'événement
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-muted-foreground">
-                  Paramètres avancés à venir...
-                </div>
-              </CardContent>
-            </Card>
+            <CollaboratorManagement eventId={eventId} />
           </div>
         </TabsContent>
       </Tabs>

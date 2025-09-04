@@ -15,6 +15,8 @@ import CheckInSystem from "@/components/CheckInSystem";
 import EventManagementDashboard from "@/components/EventManagementDashboard";
 import GuestbookManagement from "@/components/GuestbookManagement";
 import CollaboratorManagement from "@/components/CollaboratorManagement";
+import InviteesDashboard from "@/components/InviteesDashboard";
+import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -160,35 +162,11 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="invitees" className="space-y-6">
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>Liste des Invités</CardTitle>
-                <CardDescription>
-                  Gérez vos invités et leurs réponses
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-center py-8">
-                  La gestion des invités sera disponible une fois Supabase connecté.
-                </p>
-              </CardContent>
-            </Card>
+            <InviteesDashboard />
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle>Analyses & Statistiques</CardTitle>
-                <CardDescription>
-                  Suivez les performances de vos événements
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-center py-8">
-                  Les analyses détaillées seront disponibles une fois Supabase connecté.
-                </p>
-              </CardContent>
-            </Card>
+            <AnalyticsDashboard />
           </TabsContent>
         </Tabs>
       </div>
