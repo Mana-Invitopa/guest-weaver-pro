@@ -66,6 +66,138 @@ export type Database = {
           },
         ]
       }
+      event_privacy_settings: {
+        Row: {
+          allow_guest_plus_ones: boolean
+          allow_rsvp_changes: boolean
+          created_at: string
+          event_id: string
+          requires_approval: boolean
+          rsvp_deadline_days: number | null
+          show_guest_list: boolean
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          allow_guest_plus_ones?: boolean
+          allow_rsvp_changes?: boolean
+          created_at?: string
+          event_id: string
+          requires_approval?: boolean
+          rsvp_deadline_days?: number | null
+          show_guest_list?: boolean
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          allow_guest_plus_ones?: boolean
+          allow_rsvp_changes?: boolean
+          created_at?: string
+          event_id?: string
+          requires_approval?: boolean
+          rsvp_deadline_days?: number | null
+          show_guest_list?: boolean
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: []
+      }
+      event_reminders: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          event_id: string
+          id: string
+          invitee_id: string | null
+          message_template: string | null
+          personalized_message: string | null
+          reminder_type: string
+          retry_count: number | null
+          scheduled_at: string
+          sent_at: string | null
+          status: string
+          updated_at: string
+          workflow_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          event_id: string
+          id?: string
+          invitee_id?: string | null
+          message_template?: string | null
+          personalized_message?: string | null
+          reminder_type?: string
+          retry_count?: number | null
+          scheduled_at: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          workflow_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          event_id?: string
+          id?: string
+          invitee_id?: string | null
+          message_template?: string | null
+          personalized_message?: string | null
+          reminder_type?: string
+          retry_count?: number | null
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          workflow_id?: string | null
+        }
+        Relationships: []
+      }
+      event_schedules: {
+        Row: {
+          created_at: string
+          created_occurrences: number | null
+          end_date: string | null
+          event_id: string
+          id: string
+          max_occurrences: number | null
+          next_occurrence_date: string | null
+          recurrence_pattern: Json | null
+          schedule_type: string
+          start_date: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_occurrences?: number | null
+          end_date?: string | null
+          event_id: string
+          id?: string
+          max_occurrences?: number | null
+          next_occurrence_date?: string | null
+          recurrence_pattern?: Json | null
+          schedule_type?: string
+          start_date: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_occurrences?: number | null
+          end_date?: string | null
+          event_id?: string
+          id?: string
+          max_occurrences?: number | null
+          next_occurrence_date?: string | null
+          recurrence_pattern?: Json | null
+          schedule_type?: string
+          start_date?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_tables: {
         Row: {
           created_at: string
@@ -120,6 +252,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      event_workflows: {
+        Row: {
+          actions: Json
+          created_at: string
+          created_by: string
+          description: string | null
+          event_id: string
+          execution_count: number | null
+          id: string
+          last_executed_at: string | null
+          name: string
+          status: string
+          trigger_conditions: Json | null
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: Json
+          created_at?: string
+          created_by: string
+          description?: string | null
+          event_id: string
+          execution_count?: number | null
+          id?: string
+          last_executed_at?: string | null
+          name: string
+          status?: string
+          trigger_conditions?: Json | null
+          trigger_type?: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: Json
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          event_id?: string
+          execution_count?: number | null
+          id?: string
+          last_executed_at?: string | null
+          name?: string
+          status?: string
+          trigger_conditions?: Json | null
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       events: {
         Row: {
@@ -350,6 +530,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_templates: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_default: boolean
+          name: string
+          subject: string | null
+          type: string
+          updated_at: string
+          variables: Json | null
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_default?: boolean
+          name: string
+          subject?: string | null
+          type: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          subject?: string | null
+          type?: string
+          updated_at?: string
+          variables?: Json | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {

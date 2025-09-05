@@ -3,7 +3,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import {
   Calendar, Users, Settings, BarChart3, QrCode, 
   CheckCircle, Plus, Edit, Table, Mail, ChevronDown,
-  UserCheck, FileText, Home, Archive, Share, Zap
+  UserCheck, FileText, Home, Archive, Share, Zap, Shield
 } from "lucide-react";
 
 import {
@@ -30,6 +30,8 @@ const eventManagementItems = [
   { title: "Événements Actifs", url: "/admin/events/active", icon: CheckCircle },
   { title: "Événements Archivés", url: "/admin/events/archived", icon: Archive },
   { title: "Analyses & Statistiques", url: "/admin/analytics", icon: BarChart3 },
+  { title: "Workflows", url: "/admin/workflows", icon: Zap },
+  { title: "Programmation", url: "/admin/scheduler", icon: Calendar },
 ];
 
 const systemItems = [
@@ -61,6 +63,8 @@ export function AdminSidebar() {
     { title: "Partage Invitations", url: `/admin/events/${eventId}/share`, icon: Share },
     { title: "Collaborateurs", url: `/admin/events/${eventId}/collaborators`, icon: Users },
     { title: "Livre d'Or", url: `/admin/events/${eventId}/guestbook`, icon: FileText },
+    { title: "Workflows", url: `/admin/events/${eventId}/workflows`, icon: Zap },
+    { title: "Confidentialité", url: `/admin/events/${eventId}/privacy`, icon: Shield },
     { title: "Paramètres", url: `/admin/events/${eventId}/settings`, icon: Settings },
   ] : [];
 

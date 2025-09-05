@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogOut, User } from "lucide-react";
 import MobileMenu from "@/components/MobileMenu";
+import { ThemeDropdown } from "@/components/ThemeDropdown";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -36,6 +37,7 @@ const Navbar = () => {
         <div className="flex items-center space-x-4">
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-4">
+            <ThemeDropdown />
             {user ? (
               <div className="flex items-center space-x-2 md:space-x-3">
                 <div className="hidden lg:flex items-center space-x-2 text-sm text-muted-foreground">
