@@ -3,7 +3,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import {
   Calendar, Users, Settings, BarChart3, QrCode, 
   CheckCircle, Plus, Edit, Table, Mail, ChevronDown,
-  UserCheck, FileText, Home, Archive, Share, Zap, Shield
+  UserCheck, FileText, Home, Archive, Share, Zap, Shield, Activity
 } from "lucide-react";
 
 import {
@@ -32,6 +32,8 @@ const eventManagementItems = [
   { title: "Analyses & Statistiques", url: "/admin/analytics", icon: BarChart3 },
   { title: "Workflows", url: "/admin/workflows", icon: Zap },
   { title: "Programmation", url: "/admin/scheduler", icon: Calendar },
+  { title: "Pulse Monitor", url: "/admin/pulse", icon: Activity },
+  { title: "Gestion Contenu", url: "/admin/content", icon: FileText },
 ];
 
 const systemItems = [

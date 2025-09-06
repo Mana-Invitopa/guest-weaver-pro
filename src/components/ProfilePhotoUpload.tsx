@@ -2,10 +2,22 @@ import { useState, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Upload, Camera, User, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { 
+  Camera, 
+  Upload, 
+  Trash2, 
+  ImageIcon, 
+  User, 
+  CheckCircle,
+  X,
+  Loader2
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 interface ProfilePhotoUploadProps {
   currentPhotoUrl?: string;
@@ -17,7 +29,6 @@ const ProfilePhotoUpload = ({ currentPhotoUrl, onPhotoUploaded, userName }: Prof
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentPhotoUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
   const { user } = useAuth();
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,20 +37,12 @@ const ProfilePhotoUpload = ({ currentPhotoUrl, onPhotoUploaded, userName }: Prof
 
     // Validation
     if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Erreur",
-        description: "Veuillez sélectionner un fichier image",
-        variant: "destructive",
-      });
+      toast.error("Veuillez sélectionner un fichier image");
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) { // 2MB max for profile photos
-      toast({
-        title: "Erreur",
-        description: "L'image ne doit pas dépasser 2MB",
-        variant: "destructive",
-      });
+      toast.error("L'image ne doit pas dépasser 2MB");
       return;
     }
 
@@ -81,18 +84,11 @@ const ProfilePhotoUpload = ({ currentPhotoUrl, onPhotoUploaded, userName }: Prof
       
       onPhotoUploaded?.(publicUrl);
 
-      toast({
-        title: "Succès",
-        description: "Photo de profil mise à jour avec succès !",
-      });
+      toast.success("Photo de profil mise à jour avec succès !");
 
     } catch (error) {
       console.error('Error uploading photo:', error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'uploader la photo. Veuillez réessayer.",
-        variant: "destructive",
-      });
+      toast.error("Impossible d'uploader la photo. Veuillez réessayer.");
       setPreviewUrl(currentPhotoUrl || null);
     } finally {
       setUploading(false);

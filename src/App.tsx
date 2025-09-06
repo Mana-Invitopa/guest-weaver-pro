@@ -21,6 +21,8 @@ import PublicEventDetailPage from "./pages/PublicEventDetailPage";
 import EmailConfirmationRedirect from "./pages/EmailConfirmationRedirect";
 import WorkflowsPage from "./pages/WorkflowsPage";
 import SchedulerPage from "./pages/SchedulerPage";
+import ContentManagement from "./pages/ContentManagement";
+import Documentation from "./pages/Documentation";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -234,6 +236,19 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/admin/content" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <ContentManagement />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Public Documentation Route */}
+            <Route path="/docs" element={<Documentation />} />
             
             {/* Auth Redirect Routes */}
             <Route path="/auth/confirm" element={<EmailConfirmationRedirect />} />
