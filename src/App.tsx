@@ -17,7 +17,10 @@ import AdminDashboardLayout from "./pages/AdminDashboardLayout";
 import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
 import PublicEvents from "./pages/PublicEvents";
-import PublicEventDetail from "./pages/PublicEventDetail";
+import PublicEventDetailPage from "./pages/PublicEventDetailPage";
+import EmailConfirmationRedirect from "./pages/EmailConfirmationRedirect";
+import WorkflowsPage from "./pages/WorkflowsPage";
+import SchedulerPage from "./pages/SchedulerPage";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -211,11 +214,33 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/admin/workflows" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <WorkflowsPage />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/scheduler" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <SchedulerPage />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
             
+            {/* Auth Redirect Routes */}
+            <Route path="/auth/confirm" element={<EmailConfirmationRedirect />} />
             
             {/* Public Events Routes */}
             <Route path="/events" element={<PublicEvents />} />
-            <Route path="/event/:eventId" element={<PublicEventDetail />} />
+            <Route path="/event/:eventId" element={<PublicEventDetailPage />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

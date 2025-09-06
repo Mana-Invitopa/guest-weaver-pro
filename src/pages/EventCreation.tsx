@@ -5,12 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, Upload, MapPin, Clock, ArrowLeft, Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CalendarIcon, Upload, MapPin, Clock, ArrowLeft, Loader2, Settings, Calendar, Shield } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import EventCoverUpload from "@/components/EventCoverUpload";
 import InvitationDesignUpload from "@/components/InvitationDesignUpload";
+import EventPrivacySettings from "@/components/EventPrivacySettings";
+import EventScheduler from "@/components/EventScheduler";
 import { useCreateEvent } from "@/hooks/useEvents";
 
 const EventCreation = () => {
@@ -86,7 +89,7 @@ const EventCreation = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Créer un Nouvel Événement</h1>
           <p className="text-muted-foreground">
@@ -94,225 +97,259 @@ const EventCreation = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="grid lg:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle>Informations de Base</CardTitle>
-                  <CardDescription>Les détails essentiels de votre événement</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Titre de l'événement *</Label>
-                    <Input 
-                      id="title"
-                      placeholder="Mariage de Marie & Paul"
-                      value={formData.title}
-                      onChange={(e) => handleInputChange("title", e.target.value)}
-                      required
-                    />
-                  </div>
+        <Tabs defaultValue="basic" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="basic" className="flex items-center gap-2">
+              <Settings className="w-4 h-4" />
+              <span className="hidden sm:inline">Informations</span>
+            </TabsTrigger>
+            <TabsTrigger value="design" className="flex items-center gap-2">
+              <Upload className="w-4 h-4" />
+              <span className="hidden sm:inline">Design</span>
+            </TabsTrigger>
+            <TabsTrigger value="privacy" className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              <span className="hidden sm:inline">Confidentialité</span>
+            </TabsTrigger>
+            <TabsTrigger value="schedule" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span className="hidden sm:inline">Planification</span>
+            </TabsTrigger>
+          </TabsList>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Description</Label>
-                    <Textarea 
-                      id="description"
-                      placeholder="Nous avons l'honneur de vous convier..."
-                      value={formData.description}
-                      onChange={(e) => handleInputChange("description", e.target.value)}
-                      className="min-h-[100px] resize-none"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <CalendarIcon className="w-5 h-5 text-accent" />
-                    Date et Heure
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="date">Date *</Label>
-                      <Input 
-                        id="date"
-                        type="date"
-                        value={formData.date}
-                        onChange={(e) => handleInputChange("date", e.target.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="time">Heure *</Label>
-                      <Input 
-                        id="time"
-                        type="time"
-                        value={formData.time}
-                        onChange={(e) => handleInputChange("time", e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-accent" />
-                    Lieu
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <Label htmlFor="location">Adresse du lieu *</Label>
-                    <Input 
-                      id="location"
-                      placeholder="Château de Versailles, Grande Galerie"
-                      value={formData.location}
-                      onChange={(e) => handleInputChange("location", e.target.value)}
-                      required
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <InvitationDesignUpload 
-                onImageUploaded={(url) => handleInputChange("invitation_design_url", url)}
-                currentImageUrl={formData.invitation_design_url}
-              />
-
-              <EventCoverUpload 
-                onImageUploaded={(url) => handleInputChange("background_image_url", url)}
-                currentImageUrl={formData.background_image_url}
-              />
-
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Upload className="w-5 h-5 text-accent" />
-                    Personnalisation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="template">Modèle d'invitation</Label>
-                    <Select value={formData.template} onValueChange={(value) => handleInputChange('template', value)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choisissez un modèle" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="default">Classique</SelectItem>
-                        <SelectItem value="modern">Moderne</SelectItem>
-                        <SelectItem value="festive">Festif</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="space-y-6">
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle>Aperçu de l'Invitation</CardTitle>
-                  <CardDescription>Prévisualisation avec vos données</CardDescription>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="relative h-64 overflow-hidden rounded-b-lg">
-                    {formData.invitation_design_url ? (
-                      <img 
-                        src={formData.invitation_design_url} 
-                        alt="Aperçu invitation" 
-                        className="w-full h-full object-contain bg-muted"
-                      />
-                    ) : formData.background_image_url ? (
-                      <>
-                        <img 
-                          src={formData.background_image_url} 
-                          alt="Aperçu couverture" 
-                          className="w-full h-full object-cover"
+          <form onSubmit={handleSubmit}>
+            {/* Basic Information Tab */}
+            <TabsContent value="basic">
+              <div className="grid lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle>Informations de l'Événement</CardTitle>
+                      <CardDescription>Détails essentiels de votre événement</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="title">Titre de l'événement*</Label>
+                        <Input
+                          id="title"
+                          value={formData.title}
+                          onChange={(e) => handleInputChange('title', e.target.value)}
+                          placeholder="Soirée d'anniversaire, Conférence, etc."
+                          required
                         />
-                        <div className="absolute inset-0 bg-black/40"></div>
-                        <div className="absolute inset-0 flex items-center justify-center text-center px-6">
-                          <div>
-                            <h3 className="text-2xl font-bold text-white mb-2">
-                              {formData.title || "Titre de votre événement"}
-                            </h3>
-                            <div className="flex flex-col gap-2 text-white/90 text-sm">
-                              {formData.date && (
-                                <div className="flex items-center justify-center gap-2">
-                                  <CalendarIcon className="w-4 h-4" />
-                                  <span>{new Date(formData.date).toLocaleDateString('fr-FR')}</span>
-                                </div>
-                              )}
-                              {formData.time && (
-                                <div className="flex items-center justify-center gap-2">
-                                  <Clock className="w-4 h-4" />
-                                  <span>{formData.time}</span>
-                                </div>
-                              )}
-                              {formData.location && (
-                                <div className="flex items-center justify-center gap-2">
-                                  <MapPin className="w-4 h-4" />
-                                  <span className="text-xs">{formData.location}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                          id="description"
+                          value={formData.description}
+                          onChange={(e) => handleInputChange('description', e.target.value)}
+                          placeholder="Décrivez votre événement..."
+                          className="min-h-[100px]"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Lieu*</Label>
+                        <Input
+                          id="location"
+                          value={formData.location}
+                          onChange={(e) => handleInputChange('location', e.target.value)}
+                          placeholder="Adresse complète du lieu"
+                          required
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle>Date et Heure</CardTitle>
+                      <CardDescription>Quand aura lieu votre événement</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="date">Date*</Label>
+                          <Input
+                            id="date"
+                            type="date"
+                            value={formData.date}
+                            onChange={(e) => handleInputChange('date', e.target.value)}
+                            required
+                          />
                         </div>
-                      </>
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-hero flex items-center justify-center text-center px-6">
-                        <div>
-                          <h3 className="text-2xl font-bold text-white mb-2">
-                            {formData.title || "Titre de votre événement"}
-                          </h3>
-                          <p className="text-white/90 text-sm">
-                            Ajoutez un design d'invitation ou une image de couverture
-                          </p>
+                        <div className="space-y-2">
+                          <Label htmlFor="time">Heure*</Label>
+                          <Input
+                            id="time"
+                            type="time"
+                            value={formData.time}
+                            onChange={(e) => handleInputChange('time', e.target.value)}
+                            required
+                          />
                         </div>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+                    </CardContent>
+                  </Card>
+                </div>
 
-          {/* Mobile-optimized action buttons */}
-          <div className="sticky bottom-4 sm:static bg-background/95 sm:bg-transparent backdrop-blur-sm sm:backdrop-blur-none p-4 sm:p-0 rounded-lg sm:rounded-none border sm:border-0 shadow-elegant sm:shadow-none">
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end">
-              <Button 
-                type="button"
-                variant="outline" 
-                size="lg"
-                asChild
-                disabled={isLoading}
-                className="w-full sm:w-auto touch-target"
-              >
-                <Link to="/admin">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Annuler
-                </Link>
-              </Button>
-              <Button 
-                type="submit"
-                size="lg" 
-                className="w-full sm:w-auto bg-gradient-primary hover:shadow-gold transition-smooth touch-target"
-                disabled={isLoading}
-              >
-                {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                <span className="hidden sm:inline">Créer l'Événement</span>
-                <span className="sm:hidden">Créer</span>
-              </Button>
+                <div className="space-y-6">
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle>Aperçu de l'Invitation</CardTitle>
+                      <CardDescription>Prévisualisation avec vos données</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="relative h-64 overflow-hidden rounded-b-lg">
+                        {formData.invitation_design_url ? (
+                          <img 
+                            src={formData.invitation_design_url} 
+                            alt="Aperçu invitation" 
+                            className="w-full h-full object-contain bg-muted"
+                          />
+                        ) : formData.background_image_url ? (
+                          <>
+                            <img 
+                              src={formData.background_image_url} 
+                              alt="Aperçu couverture" 
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/40"></div>
+                            <div className="absolute inset-0 flex items-center justify-center text-center px-6">
+                              <div>
+                                <h3 className="text-2xl font-bold text-white mb-2">
+                                  {formData.title || "Titre de votre événement"}
+                                </h3>
+                                <div className="flex flex-col gap-2 text-white/90 text-sm">
+                                  {formData.date && (
+                                    <div className="flex items-center justify-center gap-2">
+                                      <CalendarIcon className="w-4 h-4" />
+                                      <span>{new Date(formData.date).toLocaleDateString('fr-FR')}</span>
+                                    </div>
+                                  )}
+                                  {formData.time && (
+                                    <div className="flex items-center justify-center gap-2">
+                                      <Clock className="w-4 h-4" />
+                                      <span>{formData.time}</span>
+                                    </div>
+                                  )}
+                                  {formData.location && (
+                                    <div className="flex items-center justify-center gap-2">
+                                      <MapPin className="w-4 h-4" />
+                                      <span className="text-xs">{formData.location}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-hero flex items-center justify-center text-center px-6">
+                            <div>
+                              <h3 className="text-2xl font-bold text-white mb-2">
+                                {formData.title || "Titre de votre événement"}
+                              </h3>
+                              <p className="text-white/90 text-sm">
+                                Ajoutez un design d'invitation ou une image de couverture
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Design Tab */}
+            <TabsContent value="design">
+              <div className="grid lg:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  <EventCoverUpload
+                    currentImageUrl={formData.background_image_url}
+                    onImageUploaded={(url) => handleInputChange('background_image_url', url)}
+                  />
+                  
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle>Modèle d'Invitation</CardTitle>
+                      <CardDescription>Style prédéfini pour vos invitations</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="template">Modèle d'invitation</Label>
+                        <Select value={formData.template} onValueChange={(value) => handleInputChange('template', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choisissez un modèle" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="default">Classique</SelectItem>
+                            <SelectItem value="modern">Moderne</SelectItem>
+                            <SelectItem value="festive">Festif</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="space-y-6">
+                  <InvitationDesignUpload
+                    currentImageUrl={formData.invitation_design_url}
+                    onImageUploaded={(url) => handleInputChange('invitation_design_url', url)}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Privacy Settings Tab */}
+            <TabsContent value="privacy">
+              <EventPrivacySettings eventId="new" />
+            </TabsContent>
+
+            {/* Schedule Tab */}
+            <TabsContent value="schedule">
+              <EventScheduler eventId="new" />
+            </TabsContent>
+
+            {/* Action buttons */}
+            <div className="sticky bottom-4 sm:static bg-background/95 sm:bg-transparent backdrop-blur-sm sm:backdrop-blur-none p-4 sm:p-0 rounded-lg sm:rounded-none border sm:border-0 shadow-elegant sm:shadow-none">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-end">
+                <Button 
+                  type="button"
+                  variant="outline" 
+                  size="lg"
+                  asChild
+                  disabled={isLoading}
+                  className="w-full sm:w-auto touch-target"
+                >
+                  <Link to="/admin">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Annuler
+                  </Link>
+                </Button>
+                <Button 
+                  type="submit" 
+                  size="lg"
+                  disabled={isLoading}
+                  className="bg-gradient-primary w-full sm:w-auto touch-target"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Création...
+                    </>
+                  ) : (
+                    "Créer l'Événement"
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
+        </Tabs>
       </div>
     </div>
   );
