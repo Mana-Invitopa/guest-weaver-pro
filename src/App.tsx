@@ -23,6 +23,7 @@ import WorkflowsPage from "./pages/WorkflowsPage";
 import SchedulerPage from "./pages/SchedulerPage";
 import ContentManagement from "./pages/ContentManagement";
 import Documentation from "./pages/Documentation";
+import PulseMonitor from "./components/PulseMonitor";
 import "./App.css";
 
 const queryClient = new QueryClient();
@@ -246,7 +247,16 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
-            
+            <Route 
+              path="/admin/pulse" 
+              element={
+                <ProtectedRoute>
+                  <AdminDashboardLayout>
+                    <PulseMonitor />
+                  </AdminDashboardLayout>
+                </ProtectedRoute>
+              } 
+            />
             {/* Public Documentation Route */}
             <Route path="/docs" element={<Documentation />} />
             

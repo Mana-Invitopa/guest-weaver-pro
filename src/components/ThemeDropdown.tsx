@@ -13,50 +13,38 @@ import {
   Palette, 
   Sun, 
   Moon, 
-  Monitor, 
-  Sparkles, 
-  Heart, 
-  Briefcase, 
-  Leaf,
-  Zap,
-  Crown
+  Monitor
 } from "lucide-react";
 
 const themes = [
   {
     id: 'elegant-gold',
     name: 'Or Élégant',
-    icon: Crown,
     colors: ['#F59E0B', '#1F2937', '#F3F4F6']
   },
   {
     id: 'romantic-rose',
     name: 'Rose Romantique', 
-    icon: Heart,
     colors: ['#EC4899', '#FCE7F3', '#FDF2F8']
   },
   {
     id: 'corporate-blue',
     name: 'Bleu Corporate',
-    icon: Briefcase,
     colors: ['#3B82F6', '#DBEAFE', '#F8FAFC']
   },
   {
     id: 'nature-green',
     name: 'Vert Nature',
-    icon: Leaf,
     colors: ['#10B981', '#D1FAE5', '#F0FDF4']
   },
   {
     id: 'vibrant-purple',
     name: 'Violet Vibrant',
-    icon: Zap,
     colors: ['#8B5CF6', '#E9D5FF', '#FAF5FF']
   },
   {
     id: 'sunset-orange',
     name: 'Orange Coucher',
-    icon: Sparkles,
     colors: ['#F97316', '#FED7AA', '#FFF7ED']
   }
 ];
@@ -87,12 +75,12 @@ export function ThemeDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 px-3">
+        <Button variant="ghost" size="sm" className="h-9 px-3 hover:bg-accent/10">
           <Palette className="h-4 w-4 mr-2" />
           <span className="hidden sm:inline">Thèmes</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-56 bg-card/95 backdrop-blur-sm">
         <DropdownMenuLabel>Apparence Système</DropdownMenuLabel>
         {systemThemes.map((sysTheme) => {
           const IconComponent = sysTheme.icon;
@@ -100,7 +88,7 @@ export function ThemeDropdown() {
             <DropdownMenuItem
               key={sysTheme.value}
               onClick={() => setTheme(sysTheme.value)}
-              className={theme === sysTheme.value ? "bg-accent" : ""}
+              className={theme === sysTheme.value ? "bg-accent/20" : ""}
             >
               <IconComponent className="h-4 w-4 mr-2" />
               {sysTheme.label}
@@ -111,15 +99,13 @@ export function ThemeDropdown() {
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Thèmes d'Événements</DropdownMenuLabel>
         {themes.map((eventTheme) => {
-          const IconComponent = eventTheme.icon;
           return (
             <DropdownMenuItem
               key={eventTheme.id}
               onClick={() => applyEventTheme(eventTheme.id)}
-              className={selectedEventTheme === eventTheme.id ? "bg-accent" : ""}
+              className={selectedEventTheme === eventTheme.id ? "bg-accent/20" : ""}
             >
               <div className="flex items-center w-full">
-                <IconComponent className="h-4 w-4 mr-2" />
                 <span className="flex-1">{eventTheme.name}</span>
                 <div className="flex gap-1 ml-2">
                   {eventTheme.colors.slice(0, 3).map((color, idx) => (

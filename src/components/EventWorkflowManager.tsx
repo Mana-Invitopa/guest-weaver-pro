@@ -226,35 +226,45 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
       {/* Workflows List */}
       <div className="grid gap-4">
         {workflows.map((workflow) => (
-          <Card key={workflow.id} className="shadow-card">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <CardTitle className="flex items-center gap-2">
-                    {workflow.name}
+          <Card key={workflow.id} className="shadow-elegant border-l-4 border-l-accent hover:shadow-glow transition-smooth">
+            <CardHeader className="pb-4">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <div className="space-y-3 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CardTitle className="text-xl">{workflow.name}</CardTitle>
                     <Badge className={getStatusColor(workflow.status)}>
-                      {workflow.status === 'active' ? 'Actif' : 
-                       workflow.status === 'paused' ? 'En pause' : 'Terminé'}
+                      {workflow.status === 'active' ? '🟢 Actif' : 
+                       workflow.status === 'paused' ? '🟡 En pause' : '⚫ Terminé'}
                     </Badge>
-                  </CardTitle>
-                  <CardDescription>{workflow.description}</CardDescription>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>Déclencheur: {triggerTypes.find(t => t.value === workflow.trigger_type)?.label}</span>
-                    <span>Exécutions: {workflow.execution_count}</span>
+                  </div>
+                  <CardDescription className="text-sm">{workflow.description}</CardDescription>
+                  <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded-lg">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{triggerTypes.find(t => t.value === workflow.trigger_type)?.label}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded-lg">
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>{workflow.execution_count} exécutions</span>
+                    </div>
                     {workflow.last_executed_at && (
-                      <span>Dernière exécution: {new Date(workflow.last_executed_at).toLocaleDateString()}</span>
+                      <div className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded-lg">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{new Date(workflow.last_executed_at).toLocaleDateString('fr-FR')}</span>
+                      </div>
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleToggleWorkflow(workflow.id)}
+                    className="hover:bg-accent/10"
                   >
                     {workflow.status === 'active' ? 
-                      <><Pause className="w-4 h-4 mr-1" /> Pause</> :
-                      <><Play className="w-4 h-4 mr-1" /> Activer</>
+                      <><Pause className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Pause</span></> :
+                      <><Play className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Activer</span></>
                     }
                   </Button>
                   <Button
@@ -262,40 +272,48 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
                     size="sm"
                     onClick={() => handleExecuteWorkflow(workflow.id)}
                     disabled={workflow.status !== 'active'}
+                    className="bg-gradient-primary text-white border-none hover:opacity-90 disabled:opacity-50"
                   >
-                    <Play className="w-4 h-4 mr-1" />
-                    Exécuter
+                    <Play className="w-4 h-4 sm:mr-1" />
+                    <span className="hidden sm:inline">Exécuter</span>
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="hover:bg-accent/10">
                     <Edit className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="hover:bg-destructive/10 hover:text-destructive">
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <h4 className="font-medium">Actions du workflow:</h4>
-                <div className="flex items-center gap-2 overflow-x-auto pb-2">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Zap className="w-4 h-4 text-accent" />
+                  <span>Séquence d'actions:</span>
+                </div>
+                <div className="flex items-center gap-2 overflow-x-auto pb-3">
                   {workflow.actions.map((action, index) => {
                     const IconComponent = getActionIcon(action.type);
                     return (
                       <div key={action.id} className="flex items-center gap-2 min-w-fit">
-                        <div className="flex items-center gap-2 bg-muted px-3 py-2 rounded-lg">
-                          <IconComponent className="w-4 h-4" />
-                          <span className="text-sm font-medium">
-                            {actionTypes.find(at => at.value === action.type)?.label}
-                          </span>
-                          {action.config.delay && (
-                            <span className="text-xs text-muted-foreground">
-                              ({action.config.delay.value} {action.config.delay.unit})
+                        <div className="flex items-center gap-2.5 bg-card border-2 border-accent/20 px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-smooth">
+                          <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+                            <IconComponent className="w-4 h-4 text-accent" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold">
+                              {actionTypes.find(at => at.value === action.type)?.label}
                             </span>
-                          )}
+                            {action.config.delay && (
+                              <span className="text-xs text-muted-foreground">
+                                {action.config.delay.value} {action.config.delay.unit}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         {index < workflow.actions.length - 1 && (
-                          <div className="text-muted-foreground">→</div>
+                          <div className="text-accent font-bold text-lg">→</div>
                         )}
                       </div>
                     );
@@ -309,14 +327,17 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
 
       {/* Create Workflow Dialog */}
       {isCreateDialogOpen && (
-        <Card className="shadow-elegant">
-          <CardHeader>
-            <CardTitle>Créer un nouveau workflow</CardTitle>
+        <Card className="shadow-glow border-2 border-accent/30">
+          <CardHeader className="bg-gradient-subtle">
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-accent" />
+              Créer un nouveau workflow
+            </CardTitle>
             <CardDescription>
-              Configurez une séquence d'actions automatisées
+              Configurez une séquence d'actions automatisées pour votre événement
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 mt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="workflow-name">Nom du workflow</Label>

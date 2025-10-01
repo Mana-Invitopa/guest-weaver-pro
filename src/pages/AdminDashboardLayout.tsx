@@ -37,10 +37,10 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
 
           {/* Main content */}
           <main className={cn(
-            "flex-1 overflow-x-hidden",
-            "p-4 pb-20 mobile-scroll lg:p-6 lg:pb-6"
+            "flex-1 overflow-x-hidden bg-background",
+            "p-3 pb-20 mobile-scroll sm:p-4 lg:p-6 lg:pb-6"
           )}>
-            <div className="w-full max-w-full">
+            <div className="w-full max-w-7xl mx-auto">
               {children}
             </div>
           </main>

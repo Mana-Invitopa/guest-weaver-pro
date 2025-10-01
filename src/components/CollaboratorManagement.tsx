@@ -172,10 +172,12 @@ const CollaboratorManagement = ({ eventId }: CollaboratorManagementProps) => {
         
         <CardContent>
           {!collaborators?.length ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Aucun collaborateur pour le moment</p>
-              <p className="text-sm">
+            <div className="text-center py-12 text-muted-foreground">
+              <div className="w-20 h-20 mx-auto mb-6 bg-accent/10 rounded-full flex items-center justify-center">
+                <Users className="w-10 h-10 text-accent/50" />
+              </div>
+              <p className="text-lg font-medium mb-2">Aucun collaborateur pour le moment</p>
+              <p className="text-sm max-w-md mx-auto">
                 Vous pouvez ajouter jusqu'à 3 collaborateurs pour vous aider à gérer cet événement
               </p>
             </div>
@@ -184,7 +186,7 @@ const CollaboratorManagement = ({ eventId }: CollaboratorManagementProps) => {
               {collaborators.map((collaborator) => (
                 <div 
                   key={collaborator.id}
-                  className="flex items-center justify-between p-4 border rounded-lg"
+                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border-2 border-border hover:border-accent/50 rounded-lg shadow-sm hover:shadow-md transition-smooth"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">

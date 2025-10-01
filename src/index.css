@@ -137,18 +137,28 @@ All colors MUST be HSL.
   
   /* Mobile-first responsive utilities */
   .safe-area-pb {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: max(env(safe-area-inset-bottom), 1rem);
   }
   
   /* Enhanced mobile scrolling */
   .mobile-scroll {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
+    overscroll-behavior: contain;
   }
   
-  /* Responsive mobile navigation - only show bottom navigation on mobile/tablet */
-  .lg\\:hidden {
-    @apply lg:hidden;
+  /* Responsive helpers */
+  @media (max-width: 639px) {
+    /* Extra small devices */
+    .xs\\:text-xs {
+      @apply text-xs;
+    }
+    .xs\\:p-2 {
+      @apply p-2;
+    }
+    .xs\\:gap-2 {
+      @apply gap-2;
+    }
   }
   
   /* Enhanced mobile optimizations */
@@ -162,6 +172,25 @@ All colors MUST be HSL.
     .touch-friendly {
       @apply min-h-[44px] min-w-[44px];
     }
+    
+    /* Mobile card spacing */
+    .mobile-card {
+      @apply p-4 gap-3;
+    }
+    
+    /* Mobile text sizing */
+    .mobile-heading {
+      @apply text-xl sm:text-2xl;
+    }
+    
+    .mobile-subheading {
+      @apply text-base sm:text-lg;
+    }
+    
+    /* Mobile grid adjustments */
+    .mobile-grid {
+      @apply grid-cols-1 sm:grid-cols-2;
+    }
   }
   
   /* Desktop-specific styles */
@@ -174,6 +203,11 @@ All colors MUST be HSL.
     /* Desktop sidebar always visible */
     .desktop-sidebar {
       @apply flex;
+    }
+    
+    /* Desktop specific padding */
+    .desktop-padding {
+      @apply p-6 lg:p-8;
     }
   }
 }

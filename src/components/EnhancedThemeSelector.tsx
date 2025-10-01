@@ -148,17 +148,26 @@ const EnhancedThemeSelector = ({
     setIsApplying(true);
 
     try {
-      // Simulate theme application
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
       const theme = themes.find(t => t.id === themeId);
       if (theme) {
+        // Apply theme to CSS variables
         applyTheme(theme);
+        
+        // Save to localStorage for persistence
+        localStorage.setItem(`event-theme-${eventId}`, themeId);
+        
+        // Call the callback if provided
         onThemeChange?.(themeId);
         
-        toast.success(`Thème "${theme.name}" appliqué avec succès !`);
+        // Simulate loading
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        toast.success(`Thème "${theme.name}" appliqué avec succès !`, {
+          description: 'Le thème sera visible sur toutes les pages de votre événement.'
+        });
       }
     } catch (error) {
+      console.error('Erreur lors de l\'application du thème:', error);
       toast.error("Erreur lors de l'application du thème");
     } finally {
       setIsApplying(false);
@@ -167,10 +176,16 @@ const EnhancedThemeSelector = ({
 
   const applyTheme = (theme: ThemeOption) => {
     const root = document.documentElement;
+    
+    // Apply colors as CSS custom properties
     root.style.setProperty('--primary', theme.colors.primary);
     root.style.setProperty('--secondary', theme.colors.secondary);
     root.style.setProperty('--accent', theme.colors.accent);
     root.style.setProperty('--background', theme.colors.background);
+    
+    // Add theme class to body for additional styling
+    document.body.classList.remove(...Array.from(document.body.classList).filter(c => c.startsWith('theme-')));
+    document.body.classList.add(`theme-${theme.id}`);
   };
 
   const getCategoryIcon = (category: string) => {
@@ -199,19 +214,19 @@ const EnhancedThemeSelector = ({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {recommendedThemes.map((theme: any) => {
             const IconComponent = getCategoryIcon(theme.category);
             
             return (
               <Card
                 key={theme.id}
-                className={`cursor-pointer transition-all hover:shadow-lg border-2 relative ${
+                className={`cursor-pointer transition-all hover:shadow-glow border-2 relative ${
                   selectedTheme === theme.id
-                    ? 'border-accent bg-accent/5 shadow-lg'
+                    ? 'border-accent bg-accent/5 shadow-glow ring-2 ring-accent/20'
                     : 'border-border hover:border-accent/50'
-                }`}
-                onClick={() => handleThemeSelect(theme.id)}
+                } ${isApplying && selectedTheme === theme.id ? 'animate-pulse' : ''}`}
+                onClick={() => !isApplying && handleThemeSelect(theme.id)}
               >
                 {theme.isRecommended && (
                   <div className="absolute -top-2 -right-2">
