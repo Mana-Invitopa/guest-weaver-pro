@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Users, Calendar, CheckCircle, XCircle, Clock, Plus, BarChart3, QrCode, UserCheck } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import Navbar from "@/components/Navbar";
 import { useEvents, useEvent } from "@/hooks/useEvents";
 import { useInvitees } from "@/hooks/useInvitees";
 import { useAuth } from "@/contexts/AuthContext";
@@ -53,9 +52,7 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      <Navbar />
-      
+    <div className="space-y-6">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">

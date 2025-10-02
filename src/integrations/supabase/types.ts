@@ -102,6 +102,45 @@ export type Database = {
         }
         Relationships: []
       }
+      event_programs: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number
+          end_time: string
+          event_id: string
+          id: string
+          location: string | null
+          start_time: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          end_time: string
+          event_id: string
+          id?: string
+          location?: string | null
+          start_time: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          end_time?: string
+          event_id?: string
+          id?: string
+          location?: string | null
+          start_time?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_reminders: {
         Row: {
           created_at: string
@@ -458,6 +497,54 @@ export type Database = {
           },
         ]
       }
+      identity_verifications: {
+        Row: {
+          created_at: string
+          document_back_url: string | null
+          document_front_url: string
+          document_type: string
+          id: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          selfie_url: string
+          submitted_at: string
+          updated_at: string
+          user_id: string
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          document_back_url?: string | null
+          document_front_url: string
+          document_type: string
+          id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_url: string
+          submitted_at?: string
+          updated_at?: string
+          user_id: string
+          verification_status?: string
+        }
+        Update: {
+          created_at?: string
+          document_back_url?: string | null
+          document_front_url?: string
+          document_type?: string
+          id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          selfie_url?: string
+          submitted_at?: string
+          updated_at?: string
+          user_id?: string
+          verification_status?: string
+        }
+        Relationships: []
+      }
       invitees: {
         Row: {
           checked_in_at: string | null
@@ -576,6 +663,8 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          city: string | null
+          country: string | null
           created_at: string | null
           email: string | null
           full_name: string | null
@@ -585,6 +674,8 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null
@@ -594,6 +685,8 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string | null
           email?: string | null
           full_name?: string | null

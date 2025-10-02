@@ -36,7 +36,6 @@ import {
   MoreVertical
 } from "lucide-react";
 import { toast } from "sonner";
-import AdminDashboardLayout from "@/pages/AdminDashboardLayout";
 
 interface ContentItem {
   id: string;
@@ -161,8 +160,7 @@ const ContentManagement = () => {
   const categories = Array.from(new Set(content.map(item => item.category)));
 
   return (
-    <AdminDashboardLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -385,8 +383,7 @@ const ContentManagement = () => {
             </div>
           </TabsContent>
         </Tabs>
-      </div>
-    </AdminDashboardLayout>
+    </div>
   );
 };
 

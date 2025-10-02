@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, QrCode, UserCheck, Table, Mail, FileText, Settings, Eye, Share } from "lucide-react";
+import { Calendar, Users, QrCode, UserCheck, Table, Mail, FileText, Settings, Eye, Share, ClipboardList } from "lucide-react";
 import { useEvent } from "@/hooks/useEvents";
 import { useInvitees } from "@/hooks/useInvitees";
 import EventEditor from "./EventEditor";
@@ -16,6 +16,7 @@ import InvitationSharing from "./InvitationSharing";
 import GuestbookManagement from "./GuestbookManagement";
 import EnhancedThemeSelector from "./EnhancedThemeSelector";
 import DrinkPreferencesManager from "./DrinkPreferencesManager";
+import EventProgramManager from "./EventProgramManager";
 import CollaboratorManagement from "./CollaboratorManagement";
 
 const EventManagementDashboard = () => {
@@ -47,6 +48,7 @@ const EventManagementDashboard = () => {
     if (path.includes('/invitations')) return 'invitations';
     if (path.includes('/share')) return 'share';
     if (path.includes('/guestbook')) return 'guestbook';
+    if (path.includes('/program')) return 'program';
     if (path.includes('/settings')) return 'settings';
     return 'overview';
   };
@@ -118,7 +120,7 @@ const EventManagementDashboard = () => {
 
       {/* Management Tabs */}
       <Tabs value={getActiveTab()} className="space-y-4">
-        <TabsList className="grid grid-cols-4 lg:grid-cols-9 w-full">
+        <TabsList className="grid grid-cols-5 lg:grid-cols-10 w-full">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             Vue d'ensemble
@@ -138,6 +140,10 @@ const EventManagementDashboard = () => {
           <TabsTrigger value="tables" className="flex items-center gap-2">
             <Table className="w-4 h-4" />
             Tables
+          </TabsTrigger>
+          <TabsTrigger value="program" className="flex items-center gap-2">
+            <ClipboardList className="w-4 h-4" />
+            Programme
           </TabsTrigger>
           <TabsTrigger value="invitations" className="flex items-center gap-2">
             <Mail className="w-4 h-4" />
@@ -200,6 +206,10 @@ const EventManagementDashboard = () => {
 
         <TabsContent value="tables">
           <TableManagement eventId={eventId} />
+        </TabsContent>
+
+        <TabsContent value="program">
+          <EventProgramManager eventId={eventId} />
         </TabsContent>
 
         <TabsContent value="invitations">

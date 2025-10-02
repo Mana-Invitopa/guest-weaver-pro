@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import ProfilePhotoUpload from "@/components/ProfilePhotoUpload";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import IntegrationCard from "@/components/IntegrationCard";
+import IdentityVerification from "@/components/IdentityVerification";
 
 const Settings = () => {
   const { user, signOut } = useAuth();
@@ -26,6 +27,8 @@ const Settings = () => {
     full_name: "",
     email: "",
     avatar_url: "",
+    country: "",
+    city: "",
   });
 
   const [notifications, setNotifications] = useState({
@@ -75,12 +78,16 @@ const Settings = () => {
         full_name: profile.full_name || "",
         email: profile.email || user?.email || "",
         avatar_url: (profile as any).avatar_url || "",
+        country: (profile as any).country || "",
+        city: (profile as any).city || "",
       });
     } else if (user) {
       setProfileForm({
         full_name: "",
         email: user.email || "",
         avatar_url: "",
+        country: "",
+        city: "",
       });
     }
   }, [profile, user]);
@@ -162,8 +169,9 @@ const Settings = () => {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="profile">Profil</TabsTrigger>
+          <TabsTrigger value="verification">Vérification</TabsTrigger>
           <TabsTrigger value="appearance">Apparence</TabsTrigger>
           <TabsTrigger value="integrations">Intégrations</TabsTrigger>
           <TabsTrigger value="security">Sécurité</TabsTrigger>
@@ -215,7 +223,35 @@ const Settings = () => {
                       />
                     </div>
 
-                    <Button 
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="country">Pays</Label>
+                        <Input
+                          id="country"
+                          value={profileForm.country}
+                          onChange={(e) => setProfileForm(prev => ({
+                            ...prev,
+                            country: e.target.value
+                          }))}
+                          placeholder="Ex: France"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="city">Ville</Label>
+                        <Input
+                          id="city"
+                          value={profileForm.city}
+                          onChange={(e) => setProfileForm(prev => ({
+                            ...prev,
+                            city: e.target.value
+                          }))}
+                          placeholder="Ex: Paris"
+                        />
+                      </div>
+                    </div>
+
+                    <Button
                       type="submit" 
                       className="bg-gradient-primary w-full"
                       disabled={createProfileMutation.isPending || updateProfileMutation.isPending}
@@ -247,6 +283,11 @@ const Settings = () => {
               </CardHeader>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* Verification Tab */}
+        <TabsContent value="verification">
+          <IdentityVerification />
         </TabsContent>
 
         {/* Appearance Tab */}

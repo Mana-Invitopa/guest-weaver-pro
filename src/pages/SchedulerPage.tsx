@@ -1,12 +1,7 @@
-import AdminDashboardLayout from "@/pages/AdminDashboardLayout";
 import EventScheduler from "@/components/EventScheduler";
 
 const SchedulerPage = () => {
-  return (
-    <AdminDashboardLayout>
-      <EventScheduler eventId="global" />
-    </AdminDashboardLayout>
-  );
+  return <EventScheduler eventId="global" />;
 };
 
 export default SchedulerPage;
