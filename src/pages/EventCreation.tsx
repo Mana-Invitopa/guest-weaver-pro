@@ -14,6 +14,7 @@ import EventCoverUpload from "@/components/EventCoverUpload";
 import InvitationDesignUpload from "@/components/InvitationDesignUpload";
 import EventPrivacySettings from "@/components/EventPrivacySettings";
 import EventScheduler from "@/components/EventScheduler";
+import EventTypeSelector from "@/components/EventTypeSelector";
 import { useCreateEvent } from "@/hooks/useEvents";
 
 const EventCreation = () => {
@@ -27,6 +28,7 @@ const EventCreation = () => {
     date: "",
     time: "",
     location: "",
+    event_type: "",
     template: "default",
     background_image_url: "",
     invitation_design_url: "",
@@ -60,6 +62,7 @@ const EventCreation = () => {
         description: formData.description || undefined,
         location: formData.location,
         date_time: dateTime,
+        event_type: formData.event_type || undefined,
         template: formData.template,
         background_image_url: formData.background_image_url || undefined,
         invitation_design_url: formData.invitation_design_url || undefined,
@@ -120,9 +123,15 @@ const EventCreation = () => {
           <form onSubmit={handleSubmit}>
             {/* Basic Information Tab */}
             <TabsContent value="basic">
-              <div className="grid lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  <Card className="shadow-card">
+              <div className="space-y-6">
+                <EventTypeSelector 
+                  selectedType={formData.event_type}
+                  onTypeChange={(type) => handleInputChange('event_type', type)}
+                />
+                
+                <div className="grid lg:grid-cols-2 gap-6 md:gap-8">
+                  <div className="space-y-6">
+                    <Card className="shadow-card">
                     <CardHeader>
                       <CardTitle>Informations de l'Événement</CardTitle>
                       <CardDescription>Détails essentiels de votre événement</CardDescription>
@@ -260,6 +269,7 @@ const EventCreation = () => {
                       </div>
                     </CardContent>
                   </Card>
+                </div>
                 </div>
               </div>
             </TabsContent>

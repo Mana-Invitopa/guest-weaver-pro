@@ -71,21 +71,21 @@ export function AdminSidebar() {
   ] : [];
 
   return (
-    <Sidebar className={collapsed ? "w-14" : "w-64"}>
-      <SidebarTrigger className="m-2 self-end" />
-
-      <SidebarContent className="p-4">
+    <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">
+      <SidebarContent className="p-2 md:p-4">{/* ... keep existing code */}
         {/* Main Navigation */}
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation Principale</SidebarGroupLabel>
+          <SidebarGroupLabel className="px-2 text-xs font-semibold">
+            {!collapsed ? 'Navigation Principale' : ''}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainNavItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <Link to={item.url} className={getNavCls({ isActive: isActive(item.url) })}>
-                      <item.icon className="mr-3 h-4 w-4" />
-                      {!collapsed && <span>{item.title}</span>}
+                  <Link to={item.url} className={getNavCls({ isActive: isActive(item.url) })}>
+                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      {!collapsed && <span className="ml-3">{item.title}</span>}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -98,8 +98,8 @@ export function AdminSidebar() {
         <SidebarGroup>
           <Collapsible open={isEventManagementOpen} onOpenChange={setIsEventManagementOpen}>
             <CollapsibleTrigger asChild>
-              <SidebarGroupLabel className="cursor-pointer flex items-center justify-between hover:bg-sidebar-accent/50 px-2 py-1 rounded">
-                Gestion des Événements
+              <SidebarGroupLabel className="cursor-pointer flex items-center justify-between hover:bg-sidebar-accent/50 px-2 py-1.5 rounded text-xs font-semibold">
+                {!collapsed ? 'Gestion des Événements' : ''}
                 {!collapsed && <ChevronDown className={`h-4 w-4 transition-transform ${isEventManagementOpen ? 'rotate-0' : '-rotate-90'}`} />}
               </SidebarGroupLabel>
             </CollapsibleTrigger>
@@ -110,8 +110,8 @@ export function AdminSidebar() {
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
                         <Link to={item.url} className={getNavCls({ isActive: isActive(item.url) })}>
-                          <item.icon className="mr-3 h-4 w-4" />
-                          {!collapsed && <span>{item.title}</span>}
+                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          {!collapsed && <span className="ml-3">{item.title}</span>}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -127,8 +127,8 @@ export function AdminSidebar() {
           <SidebarGroup>
             <Collapsible open={isCurrentEventOpen} onOpenChange={setIsCurrentEventOpen}>
               <CollapsibleTrigger asChild>
-                <SidebarGroupLabel className="cursor-pointer flex items-center justify-between hover:bg-sidebar-accent/50 px-2 py-1 rounded">
-                  Événement Actuel
+                <SidebarGroupLabel className="cursor-pointer flex items-center justify-between hover:bg-sidebar-accent/50 px-2 py-1.5 rounded text-xs font-semibold">
+                  {!collapsed ? 'Événement Actuel' : ''}
                   {!collapsed && <ChevronDown className={`h-4 w-4 transition-transform ${isCurrentEventOpen ? 'rotate-0' : '-rotate-90'}`} />}
                 </SidebarGroupLabel>
               </CollapsibleTrigger>
@@ -139,8 +139,8 @@ export function AdminSidebar() {
                       <SidebarMenuItem key={item.title}>
                         <SidebarMenuButton asChild>
                           <Link to={item.url} className={getNavCls({ isActive: isActive(item.url) })}>
-                            <item.icon className="mr-3 h-4 w-4" />
-                            {!collapsed && <span>{item.title}</span>}
+                            <item.icon className="h-4 w-4 flex-shrink-0" />
+                            {!collapsed && <span className="ml-3">{item.title}</span>}
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -156,8 +156,8 @@ export function AdminSidebar() {
         <SidebarGroup>
           <Collapsible open={isSystemOpen} onOpenChange={setIsSystemOpen}>
             <CollapsibleTrigger asChild>
-              <SidebarGroupLabel className="cursor-pointer flex items-center justify-between hover:bg-sidebar-accent/50 px-2 py-1 rounded">
-                Système
+              <SidebarGroupLabel className="cursor-pointer flex items-center justify-between hover:bg-sidebar-accent/50 px-2 py-1.5 rounded text-xs font-semibold">
+                {!collapsed ? 'Système' : ''}
                 {!collapsed && <ChevronDown className={`h-4 w-4 transition-transform ${isSystemOpen ? 'rotate-0' : '-rotate-90'}`} />}
               </SidebarGroupLabel>
             </CollapsibleTrigger>
@@ -168,8 +168,8 @@ export function AdminSidebar() {
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild>
                         <Link to={item.url} className={getNavCls({ isActive: isActive(item.url) })}>
-                          <item.icon className="mr-3 h-4 w-4" />
-                          {!collapsed && <span>{item.title}</span>}
+                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          {!collapsed && <span className="ml-3">{item.title}</span>}
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
