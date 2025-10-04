@@ -47,20 +47,33 @@ const InvitationDesignUpload = ({ eventId, currentImageUrl, onImageUploaded }: I
       setUploading(true);
       
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        throw new Error('Vous devez être connecté pour uploader une invitation');
+      }
       
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${eventId || 'temp'}-invitation-${Date.now()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('invitation-designs')
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage error:', uploadError);
+        throw new Error(uploadError.message || "Erreur lors de l'upload");
+      }
+
+      if (!uploadData) {
+        throw new Error("Aucune donnée retournée après l'upload");
+      }
 
       const { data } = supabase.storage
         .from('invitation-designs')
         .getPublicUrl(fileName);
+
+      if (!data?.publicUrl) {
+        throw new Error("Impossible d'obtenir l'URL publique");
+      }
 
       const imageUrl = data.publicUrl;
       setPreviewUrl(imageUrl);
@@ -70,11 +83,12 @@ const InvitationDesignUpload = ({ eventId, currentImageUrl, onImageUploaded }: I
         title: "Succès",
         description: "Design d'invitation uploadé avec succès !",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading file:', error);
+      const errorMessage = error?.message || "Impossible d'uploader le fichier";
       toast({
         title: "Erreur d'upload",
-        description: "Impossible d'uploader le fichier. Veuillez réessayer.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

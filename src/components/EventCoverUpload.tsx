@@ -58,12 +58,23 @@ const EventCoverUpload = ({ eventId, onImageUploaded, currentImageUrl }: EventCo
           upsert: false
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Storage error:', error);
+        throw new Error(error.message || "Erreur lors de l'upload");
+      }
+
+      if (!data) {
+        throw new Error("Aucune donnée retournée après l'upload");
+      }
 
       // Get public URL
       const { data: urlData } = supabase.storage
         .from('event-images')
         .getPublicUrl(data.path);
+
+      if (!urlData?.publicUrl) {
+        throw new Error("Impossible d'obtenir l'URL publique");
+      }
 
       const publicUrl = urlData.publicUrl;
       
@@ -74,11 +85,12 @@ const EventCoverUpload = ({ eventId, onImageUploaded, currentImageUrl }: EventCo
         description: "Image de couverture uploadée avec succès !",
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error uploading image:', error);
+      const errorMessage = error?.message || "Impossible d'uploader l'image";
       toast({
-        title: "Erreur",
-        description: "Impossible d'uploader l'image. Veuillez réessayer.",
+        title: "Erreur d'upload",
+        description: errorMessage,
         variant: "destructive",
       });
       setPreviewUrl(currentImageUrl || null);

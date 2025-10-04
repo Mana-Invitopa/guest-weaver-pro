@@ -275,9 +275,9 @@ const EventScheduler = ({ eventId }: EventSchedulerProps) => {
         {schedules.map((schedule) => (
           <Card key={schedule.id} className="shadow-card">
             <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <CardTitle className="flex items-center gap-2">
+              <div className="flex flex-col space-y-4 lg:flex-row lg:items-start lg:justify-between lg:space-y-0">
+                <div className="space-y-2 flex-1">
+                  <CardTitle className="flex flex-wrap items-center gap-2">
                     {schedule.name}
                     <Badge className={getStatusColor(schedule.status)}>
                       {schedule.status === 'active' ? 'Actif' : 
@@ -285,7 +285,7 @@ const EventScheduler = ({ eventId }: EventSchedulerProps) => {
                     </Badge>
                   </CardTitle>
                   <CardDescription>{getSchedulePreview(schedule)}</CardDescription>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                     <span>Début: {format(schedule.start_date, 'dd/MM/yyyy', { locale: fr })}</span>
                     <span>Occurrences: {schedule.created_occurrences}</span>
                     {schedule.max_occurrences && (
@@ -293,7 +293,7 @@ const EventScheduler = ({ eventId }: EventSchedulerProps) => {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -314,7 +314,7 @@ const EventScheduler = ({ eventId }: EventSchedulerProps) => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <h4 className="font-medium mb-2">Prochaines occurrences</h4>
                   <div className="space-y-1">
@@ -351,7 +351,7 @@ const EventScheduler = ({ eventId }: EventSchedulerProps) => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="schedule-name">Nom du programme</Label>
                 <Input
@@ -384,7 +384,7 @@ const EventScheduler = ({ eventId }: EventSchedulerProps) => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Date de début</Label>
                 <Popover>
@@ -437,7 +437,7 @@ const EventScheduler = ({ eventId }: EventSchedulerProps) => {
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="max-occurrences">Nombre maximum d'occurrences</Label>
                 <Input
