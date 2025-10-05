@@ -12,8 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import EventCoverUpload from "@/components/EventCoverUpload";
 import InvitationDesignUpload from "@/components/InvitationDesignUpload";
-import EventPrivacySettings from "@/components/EventPrivacySettings";
-import EventScheduler from "@/components/EventScheduler";
 import EventTypeSelector from "@/components/EventTypeSelector";
 import { useCreateEvent } from "@/hooks/useEvents";
 
@@ -101,7 +99,7 @@ const EventCreation = () => {
         </div>
 
         <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="basic" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Informations</span>
@@ -109,14 +107,6 @@ const EventCreation = () => {
             <TabsTrigger value="design" className="flex items-center gap-2">
               <Upload className="w-4 h-4" />
               <span className="hidden sm:inline">Design</span>
-            </TabsTrigger>
-            <TabsTrigger value="privacy" className="flex items-center gap-2">
-              <Shield className="w-4 h-4" />
-              <span className="hidden sm:inline">Confidentialité</span>
-            </TabsTrigger>
-            <TabsTrigger value="schedule" className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              <span className="hidden sm:inline">Planification</span>
             </TabsTrigger>
           </TabsList>
 
@@ -276,53 +266,75 @@ const EventCreation = () => {
 
             {/* Design Tab */}
             <TabsContent value="design">
-              <div className="grid lg:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                  <EventCoverUpload
-                    currentImageUrl={formData.background_image_url}
-                    onImageUploaded={(url) => handleInputChange('background_image_url', url)}
-                  />
-                  
-                  <Card className="shadow-card">
-                    <CardHeader>
-                      <CardTitle>Modèle d'Invitation</CardTitle>
-                      <CardDescription>Style prédéfini pour vos invitations</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="template">Modèle d'invitation</Label>
-                        <Select value={formData.template} onValueChange={(value) => handleInputChange('template', value)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Choisissez un modèle" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="default">Classique</SelectItem>
-                            <SelectItem value="modern">Moderne</SelectItem>
-                            <SelectItem value="festive">Festif</SelectItem>
-                          </SelectContent>
-                        </Select>
+              <div className="space-y-6">
+                <div className="grid lg:grid-cols-2 gap-8">
+                  <div className="space-y-6">
+                    <EventCoverUpload
+                      currentImageUrl={formData.background_image_url}
+                      onImageUploaded={(url) => handleInputChange('background_image_url', url)}
+                    />
+                    
+                    <Card className="shadow-card">
+                      <CardHeader>
+                        <CardTitle>Modèle d'Invitation</CardTitle>
+                        <CardDescription>Style prédéfini pour vos invitations</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="template">Modèle d'invitation</Label>
+                          <Select value={formData.template} onValueChange={(value) => handleInputChange('template', value)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choisissez un modèle" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="default">Classique</SelectItem>
+                              <SelectItem value="modern">Moderne</SelectItem>
+                              <SelectItem value="festive">Festif</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  <div className="space-y-6">
+                    <InvitationDesignUpload
+                      currentImageUrl={formData.invitation_design_url}
+                      onImageUploaded={(url) => handleInputChange('invitation_design_url', url)}
+                    />
+                  </div>
+                </div>
+
+                <Card className="shadow-card border-primary/20">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-primary" />
+                      Fonctionnalités Avancées
+                    </CardTitle>
+                    <CardDescription>
+                      Les options suivantes seront disponibles après la création de votre événement
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="p-4 rounded-lg border bg-muted/30">
+                        <Shield className="w-8 h-8 text-muted-foreground mb-2" />
+                        <h4 className="font-semibold mb-1">Confidentialité</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Configurez la visibilité et les paramètres RSVP
+                        </p>
                       </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <div className="space-y-6">
-                  <InvitationDesignUpload
-                    currentImageUrl={formData.invitation_design_url}
-                    onImageUploaded={(url) => handleInputChange('invitation_design_url', url)}
-                  />
-                </div>
+                      <div className="p-4 rounded-lg border bg-muted/30">
+                        <Calendar className="w-8 h-8 text-muted-foreground mb-2" />
+                        <h4 className="font-semibold mb-1">Automatisation</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Planifiez des rappels et notifications automatiques
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
-            </TabsContent>
-
-            {/* Privacy Settings Tab */}
-            <TabsContent value="privacy">
-              <EventPrivacySettings eventId="new" />
-            </TabsContent>
-
-            {/* Schedule Tab */}
-            <TabsContent value="schedule">
-              <EventScheduler eventId="new" />
             </TabsContent>
 
             {/* Action buttons */}
