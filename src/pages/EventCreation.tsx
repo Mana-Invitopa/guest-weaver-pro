@@ -13,6 +13,8 @@ import Navbar from "@/components/Navbar";
 import EventCoverUpload from "@/components/EventCoverUpload";
 import InvitationDesignUpload from "@/components/InvitationDesignUpload";
 import EventTypeSelector from "@/components/EventTypeSelector";
+import EventPrivacySettings from "@/components/EventPrivacySettings";
+import EventScheduler from "@/components/EventScheduler";
 import { useCreateEvent } from "@/hooks/useEvents";
 
 const EventCreation = () => {
@@ -30,6 +32,12 @@ const EventCreation = () => {
     template: "default",
     background_image_url: "",
     invitation_design_url: "",
+    privacy: "private" as "public" | "private" | "unlisted",
+    requires_approval: false,
+    allow_guest_plus_ones: true,
+    show_guest_list: true,
+    allow_rsvp_changes: true,
+    rsvp_deadline_days: 7,
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -99,7 +107,7 @@ const EventCreation = () => {
         </div>
 
         <Tabs defaultValue="basic" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="basic" className="flex items-center gap-2">
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Informations</span>
@@ -107,6 +115,14 @@ const EventCreation = () => {
             <TabsTrigger value="design" className="flex items-center gap-2">
               <Upload className="w-4 h-4" />
               <span className="hidden sm:inline">Design</span>
+            </TabsTrigger>
+            <TabsTrigger value="privacy" className="flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              <span className="hidden sm:inline">Confidentialité</span>
+            </TabsTrigger>
+            <TabsTrigger value="schedule" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              <span className="hidden sm:inline">Planification</span>
             </TabsTrigger>
           </TabsList>
 
@@ -305,36 +321,88 @@ const EventCreation = () => {
                   </div>
                 </div>
 
-                <Card className="shadow-card border-primary/20">
+                <Card className="shadow-card border-accent/20 bg-accent/5">
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Settings className="w-5 h-5 text-primary" />
-                      Fonctionnalités Avancées
+                    <CardTitle className="flex items-center gap-2 text-accent">
+                      <Settings className="w-5 h-5" />
+                      Prochaines Étapes
                     </CardTitle>
                     <CardDescription>
-                      Les options suivantes seront disponibles après la création de votre événement
+                      Configurez la confidentialité et la planification dans les onglets suivants
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="grid sm:grid-cols-2 gap-4">
-                      <div className="p-4 rounded-lg border bg-muted/30">
-                        <Shield className="w-8 h-8 text-muted-foreground mb-2" />
+                      <div className="p-4 rounded-lg border border-accent/30 bg-background">
+                        <Shield className="w-8 h-8 text-accent mb-2" />
                         <h4 className="font-semibold mb-1">Confidentialité</h4>
                         <p className="text-sm text-muted-foreground">
-                          Configurez la visibilité et les paramètres RSVP
+                          Définissez qui peut voir et participer à votre événement
                         </p>
                       </div>
-                      <div className="p-4 rounded-lg border bg-muted/30">
-                        <Calendar className="w-8 h-8 text-muted-foreground mb-2" />
-                        <h4 className="font-semibold mb-1">Automatisation</h4>
+                      <div className="p-4 rounded-lg border border-accent/30 bg-background">
+                        <Calendar className="w-8 h-8 text-accent mb-2" />
+                        <h4 className="font-semibold mb-1">Planification</h4>
                         <p className="text-sm text-muted-foreground">
-                          Planifiez des rappels et notifications automatiques
+                          Créez des événements récurrents et automatisations
                         </p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+
+            {/* Privacy Tab */}
+            <TabsContent value="privacy">
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Shield className="w-5 h-5 text-accent" />
+                    Paramètres de Confidentialité (Optionnel)
+                  </CardTitle>
+                  <CardDescription>
+                    Vous pouvez configurer ces paramètres maintenant ou plus tard depuis le tableau de bord
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <EventPrivacySettings 
+                    eventId=""
+                    currentSettings={{
+                      visibility: formData.privacy,
+                      requires_approval: formData.requires_approval,
+                      allow_guest_plus_ones: formData.allow_guest_plus_ones,
+                      show_guest_list: formData.show_guest_list,
+                      allow_rsvp_changes: formData.allow_rsvp_changes,
+                      rsvp_deadline_days: formData.rsvp_deadline_days,
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Schedule Tab */}
+            <TabsContent value="schedule">
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-accent" />
+                    Planification Avancée (Optionnel)
+                  </CardTitle>
+                  <CardDescription>
+                    Créez des événements récurrents ou programmez des rappels automatiques. Ces fonctionnalités seront également disponibles après la création de l'événement.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="p-6 border border-dashed border-accent/30 rounded-lg text-center bg-accent/5">
+                    <Calendar className="w-12 h-12 text-accent mx-auto mb-3" />
+                    <h4 className="font-semibold mb-2">Planification disponible après création</h4>
+                    <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                      Les fonctionnalités de planification avancée (événements récurrents, rappels automatiques) seront disponibles une fois votre événement créé. Vous pourrez y accéder depuis le tableau de bord de gestion.
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             {/* Action buttons */}
