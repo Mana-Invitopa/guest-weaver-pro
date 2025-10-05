@@ -548,11 +548,13 @@ export type Database = {
       invitees: {
         Row: {
           checked_in_at: string | null
+          code_expires_at: string | null
           created_at: string | null
           email: string
           event_id: string
           id: string
           invitation_expires_at: string | null
+          invitation_method: string | null
           is_checked_in: boolean | null
           name: string
           phone: string | null
@@ -561,14 +563,17 @@ export type Database = {
           table_number: number | null
           token: string
           updated_at: string | null
+          verification_code: string | null
         }
         Insert: {
           checked_in_at?: string | null
+          code_expires_at?: string | null
           created_at?: string | null
           email: string
           event_id: string
           id?: string
           invitation_expires_at?: string | null
+          invitation_method?: string | null
           is_checked_in?: boolean | null
           name: string
           phone?: string | null
@@ -577,14 +582,17 @@ export type Database = {
           table_number?: number | null
           token: string
           updated_at?: string | null
+          verification_code?: string | null
         }
         Update: {
           checked_in_at?: string | null
+          code_expires_at?: string | null
           created_at?: string | null
           email?: string
           event_id?: string
           id?: string
           invitation_expires_at?: string | null
+          invitation_method?: string | null
           is_checked_in?: boolean | null
           name?: string
           phone?: string | null
@@ -593,6 +601,7 @@ export type Database = {
           table_number?: number | null
           token?: string
           updated_at?: string | null
+          verification_code?: string | null
         }
         Relationships: [
           {
@@ -849,7 +858,15 @@ export type Database = {
       }
     }
     Functions: {
+      cleanup_expired_codes: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       generate_invitation_token: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_verification_code: {
         Args: Record<PropertyKey, never>
         Returns: string
       }

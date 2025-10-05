@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import SendProgramButton from "./SendProgramButton";
 
 interface EventProgram {
   id: string;
@@ -194,10 +195,13 @@ export default function EventProgramManager({ eventId }: EventProgramManagerProp
               <CardTitle>Programme de l'événement</CardTitle>
               <CardDescription>Créez et gérez le programme détaillé de votre événement</CardDescription>
             </div>
-            <Button onClick={() => { resetForm(); setEditingProgram(null); setIsOpen(true); }} className="bg-gradient-primary">
-              <Plus className="w-4 h-4 mr-2" />
-              Ajouter
-            </Button>
+            <div className="flex gap-2">
+              <SendProgramButton eventId={eventId} />
+              <Button onClick={() => { resetForm(); setEditingProgram(null); setIsOpen(true); }} className="bg-gradient-primary">
+                <Plus className="w-4 h-4 mr-2" />
+                Ajouter
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

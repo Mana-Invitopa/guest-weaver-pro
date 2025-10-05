@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle, XCircle, Search, UserCheck, Clock, Users, Camera, Table as TableIcon } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { CheckCircle, XCircle, Search, UserCheck, Clock, Users, Camera, Table as TableIcon, KeyRound } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useInvitees, useCheckInInvitee } from "@/hooks/useInvitees";
+import { useInvitees, useCheckInInvitee, useCheckInByCode } from "@/hooks/useInvitees";
 import QRScanner from "./QRScanner";
 
 interface CheckInSystemProps {
@@ -17,10 +19,13 @@ const CheckInSystem = ({ eventId }: CheckInSystemProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [scanMode, setScanMode] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
+  const [showCodeDialog, setShowCodeDialog] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
   
   const { toast } = useToast();
   const { data: invitees = [], isLoading } = useInvitees(eventId);
   const checkInMutation = useCheckInInvitee();
+  const checkInByCodeMutation = useCheckInByCode();
 
   const filteredInvitees = invitees.filter(invitee => 
     invitee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -91,6 +96,40 @@ const CheckInSystem = ({ eventId }: CheckInSystemProps) => {
       toast({
         title: "QR Code invalide",
         description: "Ce QR code ne correspond à aucun invité",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCodeCheckIn = async () => {
+    if (verificationCode.length !== 6) {
+      toast({
+        title: "Code invalide",
+        description: "Le code de vérification doit contenir 6 chiffres",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const invitee = await checkInByCodeMutation.mutateAsync({ eventId, code: verificationCode });
+      
+      const tableText = invitee.table_number && invitee.table_name 
+        ? ` (Table ${invitee.table_number} - ${invitee.table_name})` 
+        : '';
+      
+      toast({
+        title: "Check-in réussi !",
+        description: `${invitee.name} a été enregistré comme présent${tableText}`,
+      });
+      
+      setVerificationCode("");
+      setShowCodeDialog(false);
+    } catch (error: any) {
+      console.error('Error checking in by code:', error);
+      toast({
+        title: "Erreur",
+        description: error.message || "Code de vérification invalide",
         variant: "destructive",
       });
     }
@@ -168,6 +207,13 @@ const CheckInSystem = ({ eventId }: CheckInSystemProps) => {
                 className="pl-10"
               />
             </div>
+            <Button 
+              variant="outline"
+              onClick={() => setShowCodeDialog(true)}
+            >
+              <KeyRound className="w-4 h-4 mr-2" />
+              Code SMS
+            </Button>
             <Button 
               variant={showScanner ? "default" : "outline"}
               onClick={() => setShowScanner(!showScanner)}
@@ -270,6 +316,47 @@ const CheckInSystem = ({ eventId }: CheckInSystemProps) => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Code Verification Dialog */}
+      <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Vérification par code SMS</DialogTitle>
+            <DialogDescription>
+              Entrez le code de vérification à 6 chiffres reçu par SMS
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="code">Code de vérification</Label>
+              <Input
+                id="code"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                placeholder="000000"
+                className="text-center text-2xl tracking-widest font-mono"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setShowCodeDialog(false); setVerificationCode(""); }}>
+              Annuler
+            </Button>
+            <Button 
+              onClick={handleCodeCheckIn} 
+              disabled={verificationCode.length !== 6 || checkInByCodeMutation.isPending}
+              className="bg-success hover:bg-success/90"
+            >
+              <UserCheck className="w-4 h-4 mr-2" />
+              Valider
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

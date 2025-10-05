@@ -139,3 +139,44 @@ export const useCheckInInvitee = () => {
     },
   });
 };
+
+export const useCheckInByCode = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ eventId, code }: { eventId: string; code: string }) => {
+      // Find invitee by verification code and event
+      const { data: invitee, error: findError } = await supabase
+        .from('invitees')
+        .select('*')
+        .eq('event_id', eventId)
+        .eq('verification_code', code)
+        .maybeSingle();
+
+      if (findError) throw findError;
+      if (!invitee) throw new Error('Code de vérification invalide');
+
+      // Check if code has expired
+      if (invitee.code_expires_at && new Date(invitee.code_expires_at) < new Date()) {
+        throw new Error('Ce code de vérification a expiré');
+      }
+
+      // Check in the invitee
+      const { data, error } = await supabase
+        .from('invitees')
+        .update({
+          is_checked_in: true,
+          checked_in_at: new Date().toISOString(),
+        })
+        .eq('id', invitee.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as Invitee;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['invitees', data.event_id] });
+    },
+  });
+};
