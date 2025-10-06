@@ -29,7 +29,27 @@ export const usePulseMetrics = () => {
     queryFn: async () => {
       if (!user?.id) throw new Error("No user found");
       
-      // Simulate real-time data for demo
+      // Try to fetch from database first
+      const { data: dbMetrics, error } = await supabase
+        .from("pulse_metrics")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("timestamp", { ascending: false })
+        .limit(10);
+
+      // If we have database metrics, use them
+      if (!error && dbMetrics && dbMetrics.length > 0) {
+        return dbMetrics.map(m => ({
+          id: m.id,
+          name: m.name,
+          value: Number(m.value),
+          change: Number(m.change),
+          trend: m.trend as 'up' | 'down' | 'stable',
+          timestamp: m.timestamp
+        })) as PulseMetric[];
+      }
+
+      // Fallback to mock data for demo
       const mockMetrics: PulseMetric[] = [
         {
           id: "events",
@@ -67,7 +87,7 @@ export const usePulseMetrics = () => {
       
       return mockMetrics;
     },
-    refetchInterval: 30000, // Refresh every 30 seconds
+    refetchInterval: 30000,
     enabled: !!user?.id,
   });
 };
@@ -80,7 +100,27 @@ export const useSystemAlerts = () => {
     queryFn: async () => {
       if (!user?.id) throw new Error("No user found");
       
-      // Simulate alerts for demo
+      // Try to fetch from database first
+      const { data: dbAlerts, error } = await supabase
+        .from("system_alerts")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("timestamp", { ascending: false })
+        .limit(20);
+
+      // If we have database alerts, use them
+      if (!error && dbAlerts && dbAlerts.length > 0) {
+        return dbAlerts.map(a => ({
+          id: a.id,
+          type: a.type as 'info' | 'warning' | 'error' | 'success',
+          title: a.title,
+          message: a.message,
+          timestamp: a.timestamp,
+          read: a.read
+        })) as SystemAlert[];
+      }
+
+      // Fallback to mock data for demo
       const mockAlerts: SystemAlert[] = [
         {
           id: "1",
@@ -110,22 +150,37 @@ export const useSystemAlerts = () => {
       
       return mockAlerts;
     },
-    refetchInterval: 10000, // Refresh every 10 seconds
+    refetchInterval: 10000,
     enabled: !!user?.id,
   });
 };
 
 export const useMarkAlertAsRead = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   
   return useMutation({
     mutationFn: async (alertId: string) => {
-      // In a real app, this would update the database
+      if (!user?.id) throw new Error("User not authenticated");
+      
       console.log("Marking alert as read:", alertId);
+      
+      // Try to update in database
+      const { error } = await supabase
+        .from("system_alerts")
+        .update({ read: true })
+        .eq("id", alertId)
+        .eq("user_id", user.id);
+
+      if (error && error.code !== 'PGRST116') {
+        console.error("Failed to mark alert as read:", error);
+      }
+      
       return alertId;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["system-alerts"] });
+      toast.success("Alerte marquée comme lue");
     },
   });
 };

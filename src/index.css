@@ -8,34 +8,34 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* French-inspired elegant palette */
+    /* Slate blue modern palette inspired by the reference */
     --background: 0 0% 99%;
-    --foreground: 221 39% 11%;
+    --foreground: 215 28% 17%;
 
     --card: 0 0% 100%;
-    --card-foreground: 221 39% 11%;
+    --card-foreground: 215 28% 17%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 221 39% 11%;
+    --popover-foreground: 215 28% 17%;
 
-    /* Deep navy primary with gold accents */
-    --primary: 221 39% 11%;
+    /* Slate blue primary */
+    --primary: 215 28% 17%;
     --primary-foreground: 210 40% 98%;
-    --primary-hover: 221 39% 15%;
+    --primary-hover: 215 28% 25%;
 
-    /* Elegant gold secondary */
-    --secondary: 45 93% 47%;
-    --secondary-foreground: 221 39% 11%;
-    --secondary-hover: 45 93% 52%;
+    /* Soft gray-blue secondary */
+    --secondary: 214 24% 62%;
+    --secondary-foreground: 215 28% 17%;
+    --secondary-hover: 214 24% 70%;
 
     /* Soft neutrals */
     --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 215 20% 55%;
 
-    /* Gold accent */
-    --accent: 45 93% 47%;
-    --accent-foreground: 221 39% 11%;
-    --accent-hover: 45 93% 52%;
+    /* Modern blue accent */
+    --accent: 214 95% 55%;
+    --accent-foreground: 0 0% 100%;
+    --accent-hover: 214 95% 65%;
 
     /* Status colors */
     --success: 142 76% 36%;

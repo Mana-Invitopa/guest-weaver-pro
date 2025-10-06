@@ -16,6 +16,7 @@ export interface Event {
   status?: string;
   max_guests?: number;
   current_guests?: number;
+  event_type?: string;
 }
 
 export interface CreateEventData {
@@ -27,6 +28,7 @@ export interface CreateEventData {
   template?: string;
   max_guests?: number;
   status?: string;
+  event_type?: string;
 }
 
 export interface UpdateEventData {
@@ -39,6 +41,7 @@ export interface UpdateEventData {
   template?: string;
   max_guests?: number;
   status?: string;
+  event_type?: string;
 }
 
 export const useEvents = () => {

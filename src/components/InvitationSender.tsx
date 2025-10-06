@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Mail, MessageSquare, Send, Users } from "lucide-react";
+import { Mail, MessageSquare, Send, Users, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useEvent } from "@/hooks/useEvents";
 import type { Invitee } from "@/hooks/useInvitees";
+import { useNotificationTemplates } from "@/hooks/useNotificationTemplates";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface InvitationSenderProps {
   eventId: string;
@@ -22,9 +24,20 @@ const InvitationSender = ({ eventId, invitees }: InvitationSenderProps) => {
   const [whatsappMessage, setWhatsappMessage] = useState("");
   const [sendingEmail, setSendingEmail] = useState(false);
   const [sendingWhatsApp, setSendingWhatsApp] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
 
   const { toast } = useToast();
   const { data: event } = useEvent(eventId);
+  // Use event_type if available to filter templates
+  const eventCategory = event?.event_type;
+  const { data: templates } = useNotificationTemplates(eventCategory);
+
+  useEffect(() => {
+    if (templates && templates.length > 0 && !selectedTemplateId) {
+      setSelectedTemplateId(templates[0].id);
+      setEmailMessage(templates[0].content);
+    }
+  }, [templates, selectedTemplateId]);
 
   const handleSelectAll = () => {
     if (selectedInvitees.length === invitees.length) {
@@ -204,8 +217,41 @@ const InvitationSender = ({ eventId, invitees }: InvitationSenderProps) => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {templates && templates.length > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="template-select" className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-accent" />
+                  Modèle de message
+                </Label>
+                <Select
+                  value={selectedTemplateId}
+                  onValueChange={(value) => {
+                    setSelectedTemplateId(value);
+                    const template = templates.find(t => t.id === value);
+                    if (template) {
+                      setEmailMessage(template.content);
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choisir un modèle" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {templates.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        {template.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Sélectionnez un modèle pré-défini pour votre type d'événement
+                </p>
+              </div>
+            )}
+            
             <div className="space-y-2">
-              <Label htmlFor="email-message">Message personnalisé (optionnel)</Label>
+              <Label htmlFor="email-message">Message personnalisé</Label>
               <Textarea
                 id="email-message"
                 placeholder="Personnalisez votre message d'invitation..."
@@ -213,6 +259,9 @@ const InvitationSender = ({ eventId, invitees }: InvitationSenderProps) => {
                 onChange={(e) => setEmailMessage(e.target.value)}
                 className="min-h-[120px] resize-none"
               />
+              <p className="text-xs text-muted-foreground">
+                Variables disponibles: {"{guest_name}"}, {"{event_title}"}, {"{invitation_url}"}
+              </p>
             </div>
             
             <Button 

@@ -705,6 +705,42 @@ export type Database = {
         }
         Relationships: []
       }
+      pulse_metrics: {
+        Row: {
+          change: number
+          created_at: string
+          id: string
+          name: string
+          timestamp: string
+          trend: string
+          updated_at: string
+          user_id: string
+          value: number
+        }
+        Insert: {
+          change?: number
+          created_at?: string
+          id?: string
+          name: string
+          timestamp?: string
+          trend: string
+          updated_at?: string
+          user_id: string
+          value?: number
+        }
+        Update: {
+          change?: number
+          created_at?: string
+          id?: string
+          name?: string
+          timestamp?: string
+          trend?: string
+          updated_at?: string
+          user_id?: string
+          value?: number
+        }
+        Relationships: []
+      }
       rsvps: {
         Row: {
           created_at: string | null
@@ -772,6 +808,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      system_alerts: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          timestamp: string
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          timestamp?: string
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          timestamp?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
