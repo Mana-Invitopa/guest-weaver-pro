@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Select,
   SelectContent,
@@ -23,13 +22,20 @@ import {
   MessageCircle, 
   Smartphone,
   Calendar,
-  Users,
   Settings,
   Trash2,
   Edit,
   CheckCircle
 } from "lucide-react";
 import { toast } from "sonner";
+import { 
+  useEventWorkflows,
+  useCreateWorkflow,
+  useUpdateWorkflow,
+  useDeleteWorkflow,
+  useToggleWorkflow,
+  useExecuteWorkflow
+} from "@/hooks/useWorkflowsCRUD";
 
 interface WorkflowAction {
   id: string;
@@ -59,35 +65,12 @@ interface EventWorkflowManagerProps {
 }
 
 const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
-  const [workflows, setWorkflows] = useState<EventWorkflow[]>([
-    {
-      id: '1',
-      name: 'Séquence d\'invitation automatique',
-      description: 'Envoie automatiquement les invitations et rappels',
-      trigger_type: 'scheduled',
-      trigger_conditions: { schedule: '7 days before event' },
-      actions: [
-        {
-          id: '1',
-          type: 'email',
-          config: { template: 'invitation', recipients: 'all' }
-        },
-        {
-          id: '2', 
-          type: 'delay',
-          config: { delay: { value: 3, unit: 'days' } }
-        },
-        {
-          id: '3',
-          type: 'email',
-          config: { template: 'reminder', recipients: 'pending' }
-        }
-      ],
-      status: 'active',
-      execution_count: 12,
-      last_executed_at: '2024-01-15T10:30:00Z'
-    }
-  ]);
+  const { data: workflows = [], isLoading } = useEventWorkflows(eventId);
+  const createWorkflowMutation = useCreateWorkflow();
+  const updateWorkflowMutation = useUpdateWorkflow();
+  const deleteWorkflowMutation = useDeleteWorkflow();
+  const toggleWorkflowMutation = useToggleWorkflow();
+  const executeWorkflowMutation = useExecuteWorkflow();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingWorkflow, setEditingWorkflow] = useState<EventWorkflow | null>(null);
@@ -129,14 +112,16 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
 
   const handleCreateWorkflow = async () => {
     try {
-      const workflow: EventWorkflow = {
-        id: Date.now().toString(),
-        ...newWorkflow,
+      await createWorkflowMutation.mutateAsync({
+        event_id: eventId,
+        name: newWorkflow.name,
+        description: newWorkflow.description,
+        trigger_type: newWorkflow.trigger_type,
+        trigger_conditions: newWorkflow.trigger_conditions,
+        actions: newWorkflow.actions,
         status: 'active',
-        execution_count: 0
-      };
+      });
 
-      setWorkflows(prev => [...prev, workflow]);
       setNewWorkflow({
         name: '',
         description: '',
@@ -145,40 +130,42 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
         actions: []
       });
       setIsCreateDialogOpen(false);
-      
-      toast.success('Workflow créé avec succès !');
     } catch (error) {
-      toast.error('Erreur lors de la création du workflow');
+      console.error('Error creating workflow:', error);
     }
   };
 
-  const handleToggleWorkflow = async (workflowId: string) => {
-    setWorkflows(prev => prev.map(w => 
-      w.id === workflowId 
-        ? { ...w, status: w.status === 'active' ? 'paused' : 'active' }
-        : w
-    ));
-    toast.success('Statut du workflow mis à jour');
+  const handleToggleWorkflow = async (workflowId: string, currentStatus: 'active' | 'paused' | 'completed') => {
+    try {
+      await toggleWorkflowMutation.mutateAsync({
+        id: workflowId,
+        eventId,
+        currentStatus
+      });
+    } catch (error) {
+      console.error('Error toggling workflow:', error);
+    }
   };
 
   const handleExecuteWorkflow = async (workflowId: string) => {
     try {
-      // Simulate workflow execution
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setWorkflows(prev => prev.map(w => 
-        w.id === workflowId 
-          ? { 
-              ...w, 
-              execution_count: w.execution_count + 1,
-              last_executed_at: new Date().toISOString()
-            }
-          : w
-      ));
-      
-      toast.success('Workflow exécuté avec succès !');
+      await executeWorkflowMutation.mutateAsync({
+        id: workflowId,
+        eventId
+      });
     } catch (error) {
-      toast.error('Erreur lors de l\'exécution du workflow');
+      console.error('Error executing workflow:', error);
+    }
+  };
+
+  const handleDeleteWorkflow = async (workflowId: string) => {
+    try {
+      await deleteWorkflowMutation.mutateAsync({
+        id: workflowId,
+        eventId
+      });
+    } catch (error) {
+      console.error('Error deleting workflow:', error);
     }
   };
 
@@ -225,7 +212,28 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
 
       {/* Workflows List */}
       <div className="grid gap-4">
-        {workflows.map((workflow) => (
+        {isLoading ? (
+          <Card className="shadow-elegant">
+            <CardContent className="p-12 text-center">
+              <div className="animate-spin w-8 h-8 border-4 border-accent border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Chargement des workflows...</p>
+            </CardContent>
+          </Card>
+        ) : workflows.length === 0 ? (
+          <Card className="shadow-elegant">
+            <CardContent className="p-12 text-center">
+              <Zap className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Aucun workflow configuré</h3>
+              <p className="text-muted-foreground mb-4">
+                Créez votre premier workflow pour automatiser vos communications
+              </p>
+              <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-gradient-primary">
+                <Plus className="w-4 h-4 mr-2" />
+                Créer un workflow
+              </Button>
+            </CardContent>
+          </Card>
+        ) : workflows.map((workflow) => (
           <Card key={workflow.id} className="shadow-elegant border-l-4 border-l-accent hover:shadow-glow transition-smooth">
             <CardHeader className="pb-4">
               <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
@@ -259,7 +267,7 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleToggleWorkflow(workflow.id)}
+                    onClick={() => handleToggleWorkflow(workflow.id, workflow.status)}
                     className="hover:bg-accent/10"
                   >
                     {workflow.status === 'active' ? 
@@ -277,10 +285,20 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
                     <Play className="w-4 h-4 sm:mr-1" />
                     <span className="hidden sm:inline">Exécuter</span>
                   </Button>
-                  <Button variant="outline" size="sm" className="hover:bg-accent/10">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="hover:bg-accent/10"
+                    onClick={() => setEditingWorkflow(workflow)}
+                  >
                     <Edit className="w-4 h-4" />
                   </Button>
-                  <Button variant="outline" size="sm" className="hover:bg-destructive/10 hover:text-destructive">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => handleDeleteWorkflow(workflow.id)}
+                  >
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -315,15 +333,15 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
                         {index < workflow.actions.length - 1 && (
                           <div className="text-accent font-bold text-lg">→</div>
                         )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
 
       {/* Create Workflow Dialog */}
       {isCreateDialogOpen && (

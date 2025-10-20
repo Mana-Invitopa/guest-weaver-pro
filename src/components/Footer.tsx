@@ -1,64 +1,110 @@
 import { Link } from "react-router-dom";
+import { Mail, FileText, BookOpen, Calendar, Zap } from "lucide-react";
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <footer className="bg-primary text-primary-foreground py-12">
+    <footer className="bg-primary text-primary-foreground py-12 border-t border-primary-foreground/10">
       <div className="container mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-8 h-8 bg-gradient-secondary rounded-lg flex items-center justify-center">
-                <span className="text-secondary-foreground font-bold text-sm">I</span>
+            <Link to="/" className="flex items-center space-x-3 mb-4 hover:opacity-80 transition-opacity">
+              <div className="w-10 h-10 bg-gradient-secondary rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-secondary-foreground font-bold">I</span>
               </div>
-              <span className="text-xl font-bold">Invitopia Mini</span>
-            </div>
-            <p className="text-primary-foreground/80 leading-relaxed max-w-md">
+              <span className="text-2xl font-bold">Invitopia Mini</span>
+            </Link>
+            <p className="text-primary-foreground/80 leading-relaxed max-w-md mb-4">
               La solution complète pour créer et gérer vos invitations d'événements 
-              avec élégance et simplicité.
+              avec élégance et simplicité. QR codes, analytics, workflows automatisés et bien plus.
             </p>
-            <p className="text-sm text-primary-foreground/60 mt-4">
-              Propriétaire: Manassé Kikaya
-            </p>
+            <div className="flex items-center gap-2 text-sm text-primary-foreground/60">
+              <Mail className="w-4 h-4" />
+              <span>Propriétaire: Manassé Kikaya</span>
+            </div>
           </div>
 
           {/* Navigation */}
           <div>
-            <h4 className="font-semibold mb-4">Navigation</h4>
-            <ul className="space-y-2 text-sm">
+            <h4 className="font-semibold mb-4 flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Navigation
+            </h4>
+            <ul className="space-y-3 text-sm">
               <li>
-                <Link to="/" className="text-primary-foreground/80 hover:text-accent transition-smooth">
+                <Link to="/" className="text-primary-foreground/80 hover:text-accent transition-smooth flex items-center gap-2">
                   Accueil
                 </Link>
               </li>
               <li>
-                <Link to="/admin" className="text-primary-foreground/80 hover:text-accent transition-smooth">
+                <Link to="/events" className="text-primary-foreground/80 hover:text-accent transition-smooth flex items-center gap-2">
+                  Événements Publics
+                </Link>
+              </li>
+              <li>
+                <Link to="/admin" className="text-primary-foreground/80 hover:text-accent transition-smooth flex items-center gap-2">
                   Administration
                 </Link>
               </li>
               <li>
-                <Link to="/demo" className="text-primary-foreground/80 hover:text-accent transition-smooth">
-                  Démo
+                <Link to="/auth" className="text-primary-foreground/80 hover:text-accent transition-smooth flex items-center gap-2">
+                  Connexion
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Support */}
+          {/* Resources */}
           <div>
-            <h4 className="font-semibold mb-4">Support</h4>
-            <ul className="space-y-2 text-sm">
-              <li className="text-primary-foreground/80">Documentation</li>
-              <li className="text-primary-foreground/80">Guide d'utilisation</li>
-              <li className="text-primary-foreground/80">Support technique</li>
+            <h4 className="font-semibold mb-4 flex items-center gap-2">
+              <BookOpen className="w-4 h-4" />
+              Ressources
+            </h4>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link to="/docs" className="text-primary-foreground/80 hover:text-accent transition-smooth flex items-center gap-2">
+                  <FileText className="w-3 h-3" />
+                  Documentation
+                </Link>
+              </li>
+              <li>
+                <Link to="/admin/workflows" className="text-primary-foreground/80 hover:text-accent transition-smooth flex items-center gap-2">
+                  <Zap className="w-3 h-3" />
+                  Workflows
+                </Link>
+              </li>
+              <li>
+                <a 
+                  href="mailto:support@invitopia.com" 
+                  className="text-primary-foreground/80 hover:text-accent transition-smooth flex items-center gap-2"
+                >
+                  <Mail className="w-3 h-3" />
+                  Support technique
+                </a>
+              </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-primary-foreground/20 mt-12 pt-8 text-center">
-          <p className="text-sm text-primary-foreground/60">
-            © 2024 Invitopia Mini. Tous droits réservés. Développé avec Lovable.
-          </p>
+        <div className="border-t border-primary-foreground/20 mt-12 pt-8">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-primary-foreground/60">
+              © {currentYear} Invitopia Mini. Tous droits réservés.
+            </p>
+            <p className="text-sm text-primary-foreground/60 flex items-center gap-2">
+              Développé avec
+              <a 
+                href="https://lovable.dev" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-accent hover:underline font-semibold"
+              >
+                Lovable
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </footer>
