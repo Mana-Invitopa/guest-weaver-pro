@@ -82,6 +82,17 @@ const ProfilePhotoUpload = ({ currentPhotoUrl, onPhotoUploaded, userName }: Prof
 
       const publicUrl = urlData.publicUrl;
       
+      // Update profile in database
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', user.id);
+
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        throw updateError;
+      }
+
       onPhotoUploaded?.(publicUrl);
 
       toast.success("Photo de profil mise à jour avec succès !");
@@ -95,11 +106,28 @@ const ProfilePhotoUpload = ({ currentPhotoUrl, onPhotoUploaded, userName }: Prof
     }
   };
 
-  const removePhoto = () => {
-    setPreviewUrl(null);
-    onPhotoUploaded?.('');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  const removePhoto = async () => {
+    if (!user) return;
+
+    try {
+      // Update profile in database
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setPreviewUrl(null);
+      onPhotoUploaded?.('');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      toast.success("Photo de profil supprimée");
+    } catch (error) {
+      console.error('Error removing photo:', error);
+      toast.error("Impossible de supprimer la photo");
     }
   };
 

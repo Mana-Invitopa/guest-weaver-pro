@@ -5,35 +5,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, List, Plus } from "lucide-react";
 import ProfessionalCalendar from "@/components/ProfessionalCalendar";
 import EventScheduler from "@/components/EventScheduler";
-import { addDays } from "date-fns";
+import { useEvents } from "@/hooks/useEvents";
+import { useNavigate } from "react-router-dom";
 
 const SchedulerPage = () => {
   const [view, setView] = useState<'calendar' | 'list'>('calendar');
+  const { data: events = [], isLoading } = useEvents();
+  const navigate = useNavigate();
 
-  // Événements d'exemple pour la démo
-  const sampleEvents = [
-    {
-      id: '1',
-      date: new Date(),
-      title: 'Réunion équipe',
-      time: '09:00',
-      color: 'bg-blue-500/10 text-blue-700'
-    },
-    {
-      id: '2',
-      date: addDays(new Date(), 2),
-      title: 'Conférence client',
-      time: '14:00',
-      color: 'bg-green-500/10 text-green-700'
-    },
-    {
-      id: '3',
-      date: addDays(new Date(), 5),
-      title: 'Formation équipe',
-      time: '10:30',
-      color: 'bg-purple-500/10 text-purple-700'
-    }
-  ];
+  // Convert events to calendar format
+  const calendarEvents = events.map(event => ({
+    id: event.id,
+    date: new Date(event.date_time),
+    title: event.title,
+    time: new Date(event.date_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+    color: 'bg-accent/10 text-accent'
+  }));
+
+  const upcomingEvents = events.filter(e => new Date(e.date_time) >= new Date()).length;
+  const pastEvents = events.filter(e => new Date(e.date_time) < new Date()).length;
+  const totalParticipants = events.reduce((sum, e) => sum + (e.current_guests || 0), 0);
 
   return (
     <div className="container mx-auto px-3 sm:px-4 md:px-6 py-4 md:py-6 max-w-7xl">
@@ -46,7 +37,7 @@ const SchedulerPage = () => {
               Planifiez et gérez vos événements avec un calendrier professionnel
             </p>
           </div>
-          <Button className="bg-gradient-primary w-full sm:w-auto">
+          <Button onClick={() => navigate('/event-creation')} className="bg-gradient-primary w-full sm:w-auto">
             <Plus className="w-4 h-4 mr-2" />
             <span className="hidden xs:inline">Nouvel </span>Événement
           </Button>
@@ -67,10 +58,18 @@ const SchedulerPage = () => {
 
           {/* Calendar View */}
           <TabsContent value="calendar" className="mt-4 space-y-4">
-            <ProfessionalCalendar 
-              events={sampleEvents}
-              onEventClick={(event) => console.log('Event clicked:', event)}
-            />
+            {isLoading ? (
+              <Card className="shadow-card">
+                <CardContent className="flex justify-center items-center p-12">
+                  <div className="animate-spin w-8 h-8 border-4 border-accent border-t-transparent rounded-full" />
+                </CardContent>
+              </Card>
+            ) : (
+              <ProfessionalCalendar 
+                events={calendarEvents}
+                onEventClick={(event) => navigate(`/admin/events/${event.id}`)}
+              />
+            )}
           </TabsContent>
 
           {/* List View */}
@@ -83,26 +82,26 @@ const SchedulerPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <Card className="shadow-card">
             <CardHeader className="pb-3">
-              <CardDescription className="text-xs">Événements ce mois</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl">12</CardTitle>
+              <CardDescription className="text-xs">Total événements</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl">{events.length}</CardTitle>
             </CardHeader>
           </Card>
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <CardDescription className="text-xs">Événements à venir</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl">8</CardTitle>
+              <CardTitle className="text-2xl md:text-3xl">{upcomingEvents}</CardTitle>
             </CardHeader>
           </Card>
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <CardDescription className="text-xs">Événements terminés</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl">4</CardTitle>
+              <CardTitle className="text-2xl md:text-3xl">{pastEvents}</CardTitle>
             </CardHeader>
           </Card>
           <Card className="shadow-card">
             <CardHeader className="pb-3">
               <CardDescription className="text-xs">Participants total</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl">248</CardTitle>
+              <CardTitle className="text-2xl md:text-3xl">{totalParticipants}</CardTitle>
             </CardHeader>
           </Card>
         </div>

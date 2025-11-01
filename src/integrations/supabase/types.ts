@@ -930,17 +930,16 @@ export type Database = {
       }
     }
     Functions: {
-      cleanup_expired_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: number
+      cleanup_expired_codes: { Args: never; Returns: number }
+      generate_invitation_token: { Args: never; Returns: string }
+      generate_verification_code: { Args: never; Returns: string }
+      is_event_admin: {
+        Args: { event_uuid: string; user_uuid: string }
+        Returns: boolean
       }
-      generate_invitation_token: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_verification_code: {
-        Args: Record<PropertyKey, never>
-        Returns: string
+      is_event_collaborator: {
+        Args: { event_uuid: string; user_uuid: string }
+        Returns: boolean
       }
     }
     Enums: {
