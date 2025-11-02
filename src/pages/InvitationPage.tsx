@@ -29,6 +29,8 @@ const InvitationPage = () => {
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedStatus, setSubmittedStatus] = useState<'confirmed' | 'declined' | null>(null);
 
   if (isLoading) {
     return (
@@ -119,6 +121,9 @@ const InvitationPage = () => {
         title: "Succès ✨",
         description: `Votre ${rsvpStatus === 'yes' ? 'confirmation' : 'refus'} a été enregistré avec succès !`,
       });
+
+      setIsSubmitted(true);
+      setSubmittedStatus(rsvpStatus === 'yes' ? 'confirmed' : 'declined');
 
     } catch (error) {
       console.error('Error submitting RSVP:', error);
@@ -262,6 +267,64 @@ const InvitationPage = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              {isSubmitted ? (
+                <div className="text-center py-8">
+                  <div className="mb-4">
+                    {submittedStatus === 'confirmed' ? (
+                      <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg
+                          className="w-8 h-8 text-white"
+                          fill="none"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path d="M5 13l4 4L19 7"></path>
+                        </svg>
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                        <AlertCircle className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-2xl font-bold mb-2">
+                    {submittedStatus === 'confirmed' ? 'Merci pour votre confirmation !' : 'Réponse enregistrée'}
+                  </h3>
+                  <p className="text-muted-foreground mb-6">
+                    {submittedStatus === 'confirmed' 
+                      ? 'Nous avons hâte de vous voir à l\'événement !' 
+                      : 'Nous avons bien reçu votre réponse. Merci de nous avoir informés.'}
+                  </p>
+                  <div className="space-y-3">
+                    <div className="p-4 bg-accent/10 rounded-lg">
+                      <p className="text-sm">
+                        <strong>Événement:</strong> {event.title}
+                      </p>
+                      <p className="text-sm">
+                        <strong>Date:</strong> {new Date(event.date_time).toLocaleDateString('fr-FR', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        })}
+                      </p>
+                      <p className="text-sm">
+                        <strong>Lieu:</strong> {event.location}
+                      </p>
+                    </div>
+                    {submittedStatus === 'confirmed' && (
+                      <p className="text-xs text-muted-foreground">
+                        Vous recevrez un email de rappel avant l'événement.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <>
+
               <div className="bg-accent/10 p-4 rounded-lg">
                 <p className="text-sm text-foreground">
                   <strong>Bonjour {invitee.name},</strong><br/>
@@ -373,6 +436,8 @@ const InvitationPage = () => {
                  rsvpStatus === 'yes' ? 'Confirmer ma Présence' : 
                  rsvpStatus === 'no' ? 'Confirmer mon Absence' : 'Confirmer'}
               </Button>
+                </>
+              )}
             </CardContent>
           </Card>
 

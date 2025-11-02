@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogOut, User, Settings } from "lucide-react";
+import { LogOut, User, Settings, Sun, Moon } from "lucide-react";
 import MobileMenu from "@/components/MobileMenu";
-import { ThemeDropdown } from "@/components/ThemeDropdown";
+import { NotificationBell } from "@/components/NotificationBell";
+import { useTheme } from "next-themes";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,9 +17,14 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -45,8 +51,22 @@ const Navbar = () => {
         
         <div className="flex items-center space-x-4">
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-4">
-            <ThemeDropdown />
+          <div className="hidden md:flex items-center space-x-3">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={toggleTheme}
+              className="rounded-full"
+            >
+              {theme === 'dark' ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
+            
+            {user && <NotificationBell />}
+            
             {user ? (
               <div className="flex items-center space-x-3">
                 <Button asChild className="bg-gradient-primary hover:shadow-gold transition-smooth transform hover:scale-105">
