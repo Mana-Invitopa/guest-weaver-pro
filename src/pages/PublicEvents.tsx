@@ -26,7 +26,7 @@ import {
   X
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { format } from "date-fns";
+import { format, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { usePublicEvents, useEventTypes, useEventLocations } from "@/hooks/usePublicEvents";
 import Navbar from "@/components/Navbar";
@@ -224,6 +224,7 @@ const PublicEvents = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {events.map((event) => {
               const EventIcon = getEventTypeIcon(event.event_type || '');
+              const isExpired = isPast(new Date(event.date_time));
               
               return (
                 <Card key={event.id} className="shadow-card hover:shadow-elegant transition-all duration-300 overflow-hidden group">
@@ -233,22 +234,28 @@ const PublicEvents = () => {
                       <img 
                         src={event.background_image_url} 
                         alt={event.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${isExpired ? 'opacity-60 grayscale' : ''}`}
                       />
                     ) : (
-                      <div className="w-full h-full bg-gradient-hero flex items-center justify-center">
+                      <div className={`w-full h-full bg-gradient-hero flex items-center justify-center ${isExpired ? 'opacity-60 grayscale' : ''}`}>
                         <EventIcon className="w-16 h-16 text-white opacity-50" />
                       </div>
                     )}
                     
-                    <div className="absolute inset-0 bg-black/40"></div>
+                    <div className={`absolute inset-0 ${isExpired ? 'bg-black/60' : 'bg-black/40'}`}></div>
                     
                     {/* Event Type Badge */}
-                    <div className="absolute top-4 left-4">
-                      <Badge variant="secondary" className="bg-white/90 text-black">
+                    <div className="absolute top-4 left-4 flex flex-col gap-2">
+                      <Badge variant="secondary" className="bg-white/90 text-black w-fit">
                         <EventIcon className="w-3 h-3 mr-1" />
                         {getEventTypeLabel(event.event_type || '')}
                       </Badge>
+                      {isExpired && (
+                        <Badge variant="destructive" className="w-fit">
+                          <Clock className="w-3 h-3 mr-1" />
+                          Événement terminé
+                        </Badge>
+                      )}
                     </div>
                     
                     {/* Event Title Overlay */}

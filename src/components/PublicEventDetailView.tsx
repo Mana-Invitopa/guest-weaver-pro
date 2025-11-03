@@ -26,7 +26,7 @@ import {
   TrendingUp,
   MessageCircle
 } from "lucide-react";
-import { format } from "date-fns";
+import { format, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { usePublicEvent } from "@/hooks/usePublicEvents";
 import { toast } from "sonner";
@@ -165,6 +165,7 @@ const PublicEventDetailView = () => {
   }
 
   const EventIcon = getEventTypeIcon(event.event_type || '');
+  const isExpired = isPast(new Date(event.date_time));
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -203,6 +204,12 @@ const PublicEventDetailView = () => {
                 <EventIcon className="w-3 h-3 mr-1" />
                 {getEventTypeLabel(event.event_type || '')}
               </Badge>
+              {isExpired && (
+                <Badge variant="destructive">
+                  <Clock className="w-3 h-3 mr-1" />
+                  Événement terminé
+                </Badge>
+              )}
             </div>
             <h1 className="text-4xl font-bold mb-2">{event.title}</h1>
             <div className="flex items-center gap-4 text-white/90">
@@ -325,7 +332,19 @@ const PublicEventDetailView = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {rsvpStatus ? (
+                {isExpired ? (
+                  <div className="text-center py-6">
+                    <div className="space-y-3">
+                      <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto">
+                        <Clock className="w-8 h-8 text-destructive" />
+                      </div>
+                      <h3 className="font-semibold text-destructive">Événement terminé</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Cet événement est terminé. Les inscriptions ne sont plus acceptées.
+                      </p>
+                    </div>
+                  </div>
+                ) : rsvpStatus ? (
                   <div className="text-center py-6">
                     {rsvpStatus === 'confirmed' ? (
                       <div className="space-y-3">
@@ -359,6 +378,7 @@ const PublicEventDetailView = () => {
                           placeholder="Votre nom complet"
                           value={rsvpForm.name}
                           onChange={(e) => setRsvpForm(prev => ({ ...prev, name: e.target.value }))}
+                          disabled={isExpired}
                         />
                       </div>
 
@@ -370,6 +390,7 @@ const PublicEventDetailView = () => {
                           placeholder="votre@email.com"
                           value={rsvpForm.email}
                           onChange={(e) => setRsvpForm(prev => ({ ...prev, email: e.target.value }))}
+                          disabled={isExpired}
                         />
                       </div>
 
@@ -381,6 +402,7 @@ const PublicEventDetailView = () => {
                           placeholder="+33 6 12 34 56 78"
                           value={rsvpForm.phone}
                           onChange={(e) => setRsvpForm(prev => ({ ...prev, phone: e.target.value }))}
+                          disabled={isExpired}
                         />
                       </div>
 
@@ -393,6 +415,7 @@ const PublicEventDetailView = () => {
                           max="10"
                           value={rsvpForm.guest_count}
                           onChange={(e) => setRsvpForm(prev => ({ ...prev, guest_count: parseInt(e.target.value) || 1 }))}
+                          disabled={isExpired}
                         />
                       </div>
 
@@ -404,6 +427,7 @@ const PublicEventDetailView = () => {
                           rows={2}
                           value={rsvpForm.dietary_restrictions}
                           onChange={(e) => setRsvpForm(prev => ({ ...prev, dietary_restrictions: e.target.value }))}
+                          disabled={isExpired}
                         />
                       </div>
 
@@ -415,6 +439,7 @@ const PublicEventDetailView = () => {
                           rows={3}
                           value={rsvpForm.message}
                           onChange={(e) => setRsvpForm(prev => ({ ...prev, message: e.target.value }))}
+                          disabled={isExpired}
                         />
                       </div>
                     </div>
@@ -422,7 +447,7 @@ const PublicEventDetailView = () => {
                     <div className="space-y-2">
                       <Button
                         onClick={() => handleRSVP('confirmed')}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isExpired}
                         className="w-full bg-gradient-primary"
                       >
                         {isSubmitting ? (
@@ -440,7 +465,7 @@ const PublicEventDetailView = () => {
                       
                       <Button
                         onClick={() => handleRSVP('declined')}
-                        disabled={isSubmitting}
+                        disabled={isSubmitting || isExpired}
                         variant="outline"
                         className="w-full"
                       >
