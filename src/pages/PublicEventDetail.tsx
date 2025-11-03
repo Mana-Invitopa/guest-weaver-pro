@@ -143,7 +143,7 @@ const PublicEventDetail = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <div className="relative h-96 overflow-hidden">
+      <div className="relative h-64 sm:h-80 md:h-96 overflow-hidden">
         {event.background_image_url ? (
           <img 
             src={event.background_image_url} 
@@ -152,7 +152,7 @@ const PublicEventDetail = () => {
           />
         ) : (
           <div className="w-full h-full bg-gradient-hero flex items-center justify-center">
-            <EventIcon className="w-24 h-24 text-white opacity-50" />
+            <EventIcon className="w-16 h-20 sm:w-24 sm:h-24 text-white opacity-50" />
           </div>
         )}
         <div className="absolute inset-0 bg-black/50"></div>
@@ -161,7 +161,7 @@ const PublicEventDetail = () => {
         <div className="absolute inset-0 flex items-center">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-white">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-3 sm:mb-4">
                 <Button variant="outline" size="sm" asChild className="bg-white/20 border-white/30 text-white hover:bg-white/30">
                   <Link to="/events">
                     <ArrowLeft className="w-4 h-4 mr-2" />
@@ -181,11 +181,11 @@ const PublicEventDetail = () => {
                 )}
               </div>
               
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">
                 {event.title}
               </h1>
               
-              <div className="flex flex-wrap gap-6 text-lg">
+              <div className="flex flex-wrap gap-3 sm:gap-4 md:gap-6 text-sm sm:text-base md:text-lg">
                 <div className="flex items-center gap-2">
                   <Calendar className="w-5 h-5" />
                   <span>{format(new Date(event.date_time), 'EEEE d MMMM yyyy', { locale: fr })}</span>
@@ -205,11 +205,11 @@ const PublicEventDetail = () => {
       </div>
 
       {/* Content */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 sm:py-10 md:py-12">
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Main content */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
               {/* Description */}
               <Card className="shadow-card">
                 <CardHeader>
@@ -228,7 +228,7 @@ const PublicEventDetail = () => {
                   <CardTitle>Informations pratiques</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <h4 className="font-semibold mb-2">Horaires</h4>
                       <div className="flex items-center gap-2 text-muted-foreground">

@@ -94,18 +94,18 @@ const PublicEvents = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <div className="bg-gradient-hero text-white py-16">
+      <div className="bg-gradient-hero text-white py-10 sm:py-12 md:py-16">
         <div className="container mx-auto px-4 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">
             Événements Publics
           </h1>
-          <p className="text-xl text-white/80 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-white/80 max-w-2xl mx-auto px-4">
             Découvrez les événements publics à venir dans votre région
           </p>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 sm:py-10 md:py-12">
         {/* Filters */}
         <Card className="shadow-card mb-8">
           <CardHeader>
@@ -126,7 +126,7 @@ const PublicEvents = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
               {/* Search */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />

@@ -181,38 +181,38 @@ const PublicEventDetailView = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 sm:py-8">
         {/* Hero Section */}
-        <div className="relative overflow-hidden rounded-2xl mb-8">
-          {event.background_image_url ? (
-            <img 
-              src={event.background_image_url} 
-              alt={event.title}
-              className="w-full h-80 object-cover"
-            />
-          ) : (
-            <div className="w-full h-80 bg-gradient-hero flex items-center justify-center">
-              <EventIcon className="w-24 h-24 text-white opacity-50" />
-            </div>
-          )}
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl mb-6 sm:mb-8">
+        {event.background_image_url ? (
+          <img 
+            src={event.background_image_url} 
+            alt={event.title}
+            className="w-full h-64 sm:h-72 md:h-80 object-cover"
+          />
+        ) : (
+          <div className="w-full h-64 sm:h-72 md:h-80 bg-gradient-hero flex items-center justify-center">
+            <EventIcon className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-white opacity-50" />
+          </div>
+        )}
           
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           
-          <div className="absolute bottom-6 left-6 right-6 text-white">
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="secondary" className="bg-white/90 text-black">
+          <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 text-white">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <Badge variant="secondary" className="bg-white/90 text-black text-xs sm:text-sm">
                 <EventIcon className="w-3 h-3 mr-1" />
                 {getEventTypeLabel(event.event_type || '')}
               </Badge>
               {isExpired && (
-                <Badge variant="destructive">
+                <Badge variant="destructive" className="text-xs sm:text-sm">
                   <Clock className="w-3 h-3 mr-1" />
                   Événement terminé
                 </Badge>
               )}
             </div>
-            <h1 className="text-4xl font-bold mb-2">{event.title}</h1>
-            <div className="flex items-center gap-4 text-white/90">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">{event.title}</h1>
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm sm:text-base text-white/90">
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
                 <span>{format(new Date(event.date_time), 'EEEE d MMMM yyyy', { locale: fr })}</span>
@@ -235,9 +235,9 @@ const PublicEventDetailView = () => {
           </Button>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Event Details */}
             <Card className="shadow-card">
               <CardHeader>
@@ -253,7 +253,7 @@ const PublicEventDetailView = () => {
                   </div>
                 )}
                 
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-4">
                   <div className="flex items-center gap-3">
                     <MapPin className="w-5 h-5 text-accent" />
                     <div>

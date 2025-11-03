@@ -10,13 +10,17 @@ import {
   User, 
   LogOut,
   Settings,
-  BarChart3 
+  BarChart3,
+  Sun,
+  Moon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 
 const MobileMenu = () => {
   const [open, setOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
     await signOut();
@@ -97,6 +101,24 @@ const MobileMenu = () => {
                     <span className="font-medium text-foreground">{item.label}</span>
                   </Link>
                 ))}
+                
+                {/* Theme Toggle */}
+                <button
+                  onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                  className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-muted/50 transition-colors group w-full text-left"
+                >
+                  {theme === 'dark' ? (
+                    <>
+                      <Sun className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+                      <span className="font-medium text-foreground">Mode clair</span>
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="w-5 h-5 text-muted-foreground group-hover:text-foreground" />
+                      <span className="font-medium text-foreground">Mode sombre</span>
+                    </>
+                  )}
+                </button>
               </nav>
             </div>
 
