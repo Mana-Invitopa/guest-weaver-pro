@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Select,
   SelectContent,
@@ -25,7 +26,10 @@ import {
   Settings,
   Trash2,
   Edit,
-  CheckCircle
+  CheckCircle,
+  Sparkles,
+  Heart,
+  List
 } from "lucide-react";
 import { toast } from "sonner";
 import { 
@@ -36,6 +40,7 @@ import {
   useToggleWorkflow
 } from "@/hooks/useWorkflowsCRUD";
 import { useWorkflowExecution } from "@/hooks/useWorkflowExecution";
+import { workflowTemplates, categories, type WorkflowTemplate } from "@/data/workflowTemplates";
 
 interface WorkflowAction {
   id: string;
@@ -74,6 +79,7 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingWorkflow, setEditingWorkflow] = useState<EventWorkflow | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<'invitation' | 'reminder' | 'followup'>('invitation');
   const [newWorkflow, setNewWorkflow] = useState({
     name: '',
     description: '',
@@ -189,28 +195,125 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
     }));
   };
 
+  const handleApplyTemplate = async (template: WorkflowTemplate) => {
+    try {
+      await createWorkflowMutation.mutateAsync({
+        event_id: eventId,
+        name: template.name,
+        description: template.description,
+        trigger_type: template.trigger_type,
+        trigger_conditions: template.trigger_conditions,
+        actions: template.actions,
+        status: 'active',
+      });
+      
+      toast.success('Template appliqué avec succès', {
+        description: `Le workflow "${template.name}" a été créé et activé`
+      });
+    } catch (error) {
+      console.error('Error applying template:', error);
+    }
+  };
+
+  const filteredTemplates = workflowTemplates.filter(t => t.category === selectedCategory);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
+          <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
             <Zap className="w-6 h-6 text-accent" />
             Workflows d'Automatisation
           </h2>
-          <p className="text-muted-foreground">
-            Créez des séquences automatisées pour vos invitations et rappels
+          <p className="text-sm md:text-base text-muted-foreground">
+            Créez des séquences automatisées ou utilisez nos templates prédéfinis
           </p>
         </div>
         <Button 
           onClick={() => setIsCreateDialogOpen(true)}
-          className="bg-gradient-primary"
+          className="bg-gradient-primary w-full sm:w-auto"
         >
           <Plus className="w-4 h-4 mr-2" />
-          Nouveau Workflow
+          Créer un workflow
         </Button>
       </div>
 
-      {/* Workflows List */}
+      {/* Templates and Workflows Tabs */}
+      <Tabs defaultValue="templates" className="w-full">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="templates" className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4" />
+            Templates
+          </TabsTrigger>
+          <TabsTrigger value="workflows" className="flex items-center gap-2">
+            <List className="w-4 h-4" />
+            Mes Workflows
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Templates Tab */}
+        <TabsContent value="templates" className="space-y-6 mt-6">
+          {/* Category Filter */}
+          <div className="flex flex-wrap gap-2">
+            {categories.map((category) => (
+              <Button
+                key={category.value}
+                variant={selectedCategory === category.value ? "default" : "outline"}
+                size="sm"
+                onClick={() => setSelectedCategory(category.value as any)}
+                className={selectedCategory === category.value ? "bg-gradient-primary" : ""}
+              >
+                {category.label}
+              </Button>
+            ))}
+          </div>
+
+          {/* Templates Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTemplates.map((template) => {
+              const IconComponent = template.icon;
+              return (
+                <Card 
+                  key={template.id} 
+                  className="shadow-elegant hover:shadow-glow transition-smooth cursor-pointer group"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className={`w-12 h-12 rounded-xl ${template.color} flex items-center justify-center flex-shrink-0`}>
+                        <IconComponent className="w-6 h-6 text-white" />
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        {categories.find(c => c.value === template.category)?.label}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-lg mt-3">{template.name}</CardTitle>
+                    <CardDescription className="text-sm line-clamp-2">
+                      {template.description}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>{template.actions.length} actions</span>
+                    </div>
+                    <Button 
+                      onClick={() => handleApplyTemplate(template)}
+                      className="w-full bg-gradient-primary group-hover:opacity-90"
+                      size="sm"
+                    >
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Utiliser ce template
+                    </Button>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        {/* Workflows Tab */}
+        <TabsContent value="workflows" className="space-y-4 mt-6">
+
       <div className="grid gap-4">
         {isLoading ? (
           <Card className="shadow-elegant">
@@ -340,8 +443,10 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
           </div>
         </CardContent>
       </Card>
-    ))}
-  </div>
+        ))}
+      </div>
+        </TabsContent>
+      </Tabs>
 
       {/* Create Workflow Dialog */}
       {isCreateDialogOpen && (
