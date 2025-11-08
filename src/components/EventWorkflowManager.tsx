@@ -33,9 +33,9 @@ import {
   useCreateWorkflow,
   useUpdateWorkflow,
   useDeleteWorkflow,
-  useToggleWorkflow,
-  useExecuteWorkflow
+  useToggleWorkflow
 } from "@/hooks/useWorkflowsCRUD";
+import { useWorkflowExecution } from "@/hooks/useWorkflowExecution";
 
 interface WorkflowAction {
   id: string;
@@ -70,7 +70,7 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
   const updateWorkflowMutation = useUpdateWorkflow();
   const deleteWorkflowMutation = useDeleteWorkflow();
   const toggleWorkflowMutation = useToggleWorkflow();
-  const executeWorkflowMutation = useExecuteWorkflow();
+  const executeWorkflowMutation = useWorkflowExecution();
 
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingWorkflow, setEditingWorkflow] = useState<EventWorkflow | null>(null);
@@ -150,7 +150,7 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
   const handleExecuteWorkflow = async (workflowId: string) => {
     try {
       await executeWorkflowMutation.mutateAsync({
-        id: workflowId,
+        workflowId,
         eventId
       });
     } catch (error) {

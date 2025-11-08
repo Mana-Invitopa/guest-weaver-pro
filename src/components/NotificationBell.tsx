@@ -1,4 +1,4 @@
-import { Bell } from "lucide-react";
+import { Bell, CheckCircle2, XCircle, UserCheck, Zap, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,83 +10,37 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-
-interface Notification {
-  id: string;
-  message: string;
-  timestamp: Date;
-  read: boolean;
-}
+import { useGlobalNotifications } from "@/hooks/useGlobalNotifications";
+import { useNavigate } from "react-router-dom";
 
 export const NotificationBell = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const { user } = useAuth();
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const { notifications, unreadCount, markAsRead, markAllAsRead, clearAll } = useGlobalNotifications();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!user) return;
-
-    // Listen to RSVP changes across all user's events
-    const channel = supabase
-      .channel('user-rsvp-notifications')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'rsvps',
-        },
-        async (payload) => {
-          const rsvpData = payload.new as any;
-          
-          // Check if this RSVP belongs to one of the user's events
-          const { data: event, error: eventError } = await supabase
-            .from('events')
-            .select('id, title, admin_id')
-            .eq('id', rsvpData.event_id)
-            .eq('admin_id', user.id)
-            .maybeSingle();
-
-          if (event && !eventError) {
-            // Fetch invitee details
-            const { data: invitee } = await supabase
-              .from('invitees')
-              .select('name')
-              .eq('id', rsvpData.invitee_id)
-              .single();
-
-            const guestName = invitee?.name || 'Un invité';
-            const statusText = rsvpData.status === 'confirmed' 
-              ? 'a confirmé sa présence' 
-              : 'a décliné l\'invitation';
-
-            setNotifications(prev => [{
-              id: crypto.randomUUID(),
-              message: `${guestName} ${statusText} à "${event.title}"`,
-              timestamp: new Date(),
-              read: false,
-            }, ...prev]);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
-
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'rsvp_confirmed':
+        return <CheckCircle2 className="w-4 h-4 text-success" />;
+      case 'rsvp_declined':
+        return <XCircle className="w-4 h-4 text-destructive" />;
+      case 'check_in':
+        return <UserCheck className="w-4 h-4 text-accent" />;
+      case 'workflow_completed':
+        return <Zap className="w-4 h-4 text-primary" />;
+      case 'reminder_sent':
+        return <Mail className="w-4 h-4 text-muted-foreground" />;
+      default:
+        return <Bell className="w-4 h-4" />;
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const handleNotificationClick = (notification: any) => {
+    markAsRead(notification.id);
+    if (notification.eventId) {
+      navigate(`/admin/events/${notification.eventId}`);
+    }
   };
 
   if (!user) return null;
@@ -107,50 +61,78 @@ export const NotificationBell = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        <DropdownMenuLabel className="flex items-center justify-between">
-          <span>Notifications</span>
-          {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={markAllAsRead}
-              className="h-auto p-1 text-xs"
-            >
-              Tout marquer comme lu
-            </Button>
-          )}
+        <DropdownMenuLabel className="flex items-center justify-between border-b pb-2">
+          <span className="font-bold">Notifications</span>
+          <div className="flex items-center gap-2">
+            {notifications.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearAll}
+                className="h-auto p-1 text-xs hover:text-destructive"
+              >
+                Effacer
+              </Button>
+            )}
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={markAllAsRead}
+                className="h-auto p-1 text-xs"
+              >
+                Marquer comme lu
+              </Button>
+            )}
+          </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <ScrollArea className="h-[300px]">
+        <ScrollArea className="h-[400px]">
           {notifications.length === 0 ? (
-            <div className="p-4 text-center text-sm text-muted-foreground">
-              Aucune notification
+            <div className="p-8 text-center">
+              <Bell className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+              <p className="text-sm text-muted-foreground">
+                Aucune notification
+              </p>
             </div>
           ) : (
-            notifications.map((notification) => (
-              <DropdownMenuItem
-                key={notification.id}
-                className={`flex flex-col items-start p-3 cursor-pointer ${
-                  !notification.read ? 'bg-accent/10' : ''
-                }`}
-                onClick={() => markAsRead(notification.id)}
-              >
-                <div className="flex items-start justify-between w-full">
-                  <p className="text-sm font-medium">{notification.message}</p>
-                  {!notification.read && (
-                    <div className="h-2 w-2 rounded-full bg-accent mt-1 ml-2" />
-                  )}
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {notification.timestamp.toLocaleString('fr-FR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    day: 'numeric',
-                    month: 'short',
-                  })}
-                </p>
-              </DropdownMenuItem>
-            ))
+            <div className="p-2 space-y-1">
+              {notifications.map((notification) => (
+                <DropdownMenuItem
+                  key={notification.id}
+                  className={`flex items-start gap-3 p-3 cursor-pointer rounded-lg transition-smooth ${
+                    !notification.read ? 'bg-accent/10 hover:bg-accent/20' : 'hover:bg-muted'
+                  }`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <div className="mt-0.5">
+                    {getNotificationIcon(notification.type)}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium leading-tight">
+                        {notification.message}
+                      </p>
+                      {!notification.read && (
+                        <div className="h-2 w-2 rounded-full bg-accent flex-shrink-0 mt-1" />
+                      )}
+                    </div>
+                    {notification.eventTitle && (
+                      <p className="text-xs text-muted-foreground">
+                        📅 {notification.eventTitle}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {notification.timestamp.toLocaleString('fr-FR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        day: 'numeric',
+                        month: 'short',
+                      })}
+                    </p>
+                  </div>
+                </DropdownMenuItem>
+              ))}
+            </div>
           )}
         </ScrollArea>
       </DropdownMenuContent>
