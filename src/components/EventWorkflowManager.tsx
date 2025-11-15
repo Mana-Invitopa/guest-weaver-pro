@@ -1,69 +1,34 @@
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  Zap, 
-  Play, 
-  Pause, 
-  Plus, 
-  Clock, 
-  Mail, 
-  MessageCircle, 
-  Smartphone,
-  Calendar,
-  Settings,
-  Trash2,
-  Edit,
-  CheckCircle,
-  Sparkles,
-  Heart,
-  List
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Plus, Play, Pause, Trash2, Clock, Zap, Mail, MessageSquare, Sparkles, Filter, Copy, BarChart3,
 } from "lucide-react";
-import { toast } from "sonner";
-import { 
-  useEventWorkflows,
-  useCreateWorkflow,
-  useUpdateWorkflow,
-  useDeleteWorkflow,
-  useToggleWorkflow
+import {
+  useEventWorkflows, useCreateWorkflow, useUpdateWorkflow, useDeleteWorkflow,
+  useToggleWorkflow, WorkflowAction, EventWorkflow,
 } from "@/hooks/useWorkflowsCRUD";
 import { useWorkflowExecution } from "@/hooks/useWorkflowExecution";
-import { workflowTemplates, categories, type WorkflowTemplate } from "@/data/workflowTemplates";
-
-interface WorkflowAction {
-  id: string;
-  type: 'email' | 'sms' | 'whatsapp' | 'telegram' | 'delay';
-  config: {
-    template?: string;
-    delay?: { value: number; unit: 'minutes' | 'hours' | 'days' };
-    recipients?: 'all' | 'confirmed' | 'pending' | 'declined';
-    message?: string;
-  };
-}
-
-interface EventWorkflow {
-  id: string;
-  name: string;
-  description: string;
-  trigger_type: 'manual' | 'scheduled' | 'conditional';
-  trigger_conditions: any;
-  actions: WorkflowAction[];
-  status: 'active' | 'paused' | 'completed';
-  execution_count: number;
-  last_executed_at?: string;
-}
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { workflowTemplates, WorkflowTemplate } from "@/data/workflowTemplates";
+import { WorkflowVisualEditor } from "./WorkflowVisualEditor";
+import { WorkflowAnalytics } from "./WorkflowAnalytics";
+import { WorkflowConditionsEditor } from "./WorkflowConditionsEditor";
 
 interface EventWorkflowManagerProps {
   eventId: string;
@@ -71,508 +36,171 @@ interface EventWorkflowManagerProps {
 
 const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
   const { data: workflows = [], isLoading } = useEventWorkflows(eventId);
-  const createWorkflowMutation = useCreateWorkflow();
-  const updateWorkflowMutation = useUpdateWorkflow();
-  const deleteWorkflowMutation = useDeleteWorkflow();
-  const toggleWorkflowMutation = useToggleWorkflow();
-  const executeWorkflowMutation = useWorkflowExecution();
+  const createWorkflow = useCreateWorkflow();
+  const deleteWorkflow = useDeleteWorkflow();
+  const toggleWorkflow = useToggleWorkflow();
+  const executeWorkflow = useWorkflowExecution();
 
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [editingWorkflow, setEditingWorkflow] = useState<EventWorkflow | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<'invitation' | 'reminder' | 'followup'>('invitation');
-  const [newWorkflow, setNewWorkflow] = useState({
-    name: '',
-    description: '',
-    trigger_type: 'manual' as const,
-    trigger_conditions: {},
-    actions: [] as WorkflowAction[]
+  const [showNewWorkflow, setShowNewWorkflow] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<string>("templates");
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [newWorkflow, setNewWorkflow] = useState<{
+    name: string; description: string; 
+    trigger_type: "manual" | "scheduled" | "conditional";
+    actions: WorkflowAction[]; conditions: any[];
+  }>({
+    name: "", description: "", trigger_type: "manual",
+    actions: [], conditions: [],
   });
 
-  const triggerTypes = [
-    { value: 'manual', label: 'Manuel', description: 'Déclencher manuellement' },
-    { value: 'scheduled', label: 'Programmé', description: 'À une date/heure précise' },
-    { value: 'conditional', label: 'Conditionnel', description: 'Basé sur des conditions' }
+  const handleCreateWorkflow = () => {
+    createWorkflow.mutate({
+      event_id: eventId, name: newWorkflow.name, description: newWorkflow.description,
+      trigger_type: newWorkflow.trigger_type, trigger_conditions: { conditions: newWorkflow.conditions },
+      actions: newWorkflow.actions, status: "active",
+    });
+    setShowNewWorkflow(false);
+    setNewWorkflow({ name: "", description: "", trigger_type: "manual", actions: [], conditions: [] });
+  };
+
+  const handleApplyTemplate = (template: WorkflowTemplate) => {
+    setNewWorkflow({
+      name: template.name, description: template.description, trigger_type: template.trigger_type,
+      actions: template.actions, conditions: [],
+    });
+    setActiveTab("workflows");
+    setShowNewWorkflow(true);
+  };
+
+  const handleDuplicateWorkflow = (workflow: EventWorkflow) => {
+    setNewWorkflow({
+      name: `${workflow.name} (Copie)`, description: workflow.description || "",
+      trigger_type: workflow.trigger_type, actions: workflow.actions,
+      conditions: (workflow.trigger_conditions as any)?.conditions || [],
+    });
+    setShowNewWorkflow(true);
+  };
+
+  const filteredTemplates = selectedCategory === "all" ? workflowTemplates : workflowTemplates.filter((t) => t.category === selectedCategory);
+  const categories = [
+    { value: "all", label: "Tous" }, { value: "invitation", label: "Invitations" },
+    { value: "reminder", label: "Rappels" }, { value: "followup", label: "Suivi" },
   ];
 
-  const actionTypes = [
-    { value: 'email', label: 'Email', icon: Mail, description: 'Envoyer un email' },
-    { value: 'sms', label: 'SMS', icon: Smartphone, description: 'Envoyer un SMS' },
-    { value: 'whatsapp', label: 'WhatsApp', icon: MessageCircle, description: 'Message WhatsApp' },
-    { value: 'telegram', label: 'Telegram', icon: MessageCircle, description: 'Message Telegram' },
-    { value: 'delay', label: 'Délai', icon: Clock, description: 'Attendre un délai' }
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'bg-success text-success-foreground';
-      case 'paused': return 'bg-warning text-warning-foreground';
-      case 'completed': return 'bg-muted text-muted-foreground';
-      default: return 'bg-muted text-muted-foreground';
-    }
-  };
-
-  const getActionIcon = (type: string) => {
-    const actionType = actionTypes.find(at => at.value === type);
-    return actionType?.icon || Settings;
-  };
-
-  const handleCreateWorkflow = async () => {
-    try {
-      await createWorkflowMutation.mutateAsync({
-        event_id: eventId,
-        name: newWorkflow.name,
-        description: newWorkflow.description,
-        trigger_type: newWorkflow.trigger_type,
-        trigger_conditions: newWorkflow.trigger_conditions,
-        actions: newWorkflow.actions,
-        status: 'active',
-      });
-
-      setNewWorkflow({
-        name: '',
-        description: '',
-        trigger_type: 'manual',
-        trigger_conditions: {},
-        actions: []
-      });
-      setIsCreateDialogOpen(false);
-    } catch (error) {
-      console.error('Error creating workflow:', error);
-    }
-  };
-
-  const handleToggleWorkflow = async (workflowId: string, currentStatus: 'active' | 'paused' | 'completed') => {
-    try {
-      await toggleWorkflowMutation.mutateAsync({
-        id: workflowId,
-        eventId,
-        currentStatus
-      });
-    } catch (error) {
-      console.error('Error toggling workflow:', error);
-    }
-  };
-
-  const handleExecuteWorkflow = async (workflowId: string) => {
-    try {
-      await executeWorkflowMutation.mutateAsync({
-        workflowId,
-        eventId
-      });
-    } catch (error) {
-      console.error('Error executing workflow:', error);
-    }
-  };
-
-  const handleDeleteWorkflow = async (workflowId: string) => {
-    try {
-      await deleteWorkflowMutation.mutateAsync({
-        id: workflowId,
-        eventId
-      });
-    } catch (error) {
-      console.error('Error deleting workflow:', error);
-    }
-  };
-
-  const addActionToWorkflow = (actionType: string) => {
-    const newAction: WorkflowAction = {
-      id: Date.now().toString(),
-      type: actionType as any,
-      config: {}
-    };
-
-    setNewWorkflow(prev => ({
-      ...prev,
-      actions: [...prev.actions, newAction]
-    }));
-  };
-
-  const removeActionFromWorkflow = (actionId: string) => {
-    setNewWorkflow(prev => ({
-      ...prev,
-      actions: prev.actions.filter(a => a.id !== actionId)
-    }));
-  };
-
-  const handleApplyTemplate = async (template: WorkflowTemplate) => {
-    try {
-      await createWorkflowMutation.mutateAsync({
-        event_id: eventId,
-        name: template.name,
-        description: template.description,
-        trigger_type: template.trigger_type,
-        trigger_conditions: template.trigger_conditions,
-        actions: template.actions,
-        status: 'active',
-      });
-      
-      toast.success('Template appliqué avec succès', {
-        description: `Le workflow "${template.name}" a été créé et activé`
-      });
-    } catch (error) {
-      console.error('Error applying template:', error);
-    }
-  };
-
-  const filteredTemplates = workflowTemplates.filter(t => t.category === selectedCategory);
+  if (isLoading) return <div className="p-8 text-center">Chargement...</div>;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-            <Zap className="w-6 h-6 text-accent" />
-            Workflows d'Automatisation
-          </h2>
-          <p className="text-sm md:text-base text-muted-foreground">
-            Créez des séquences automatisées ou utilisez nos templates prédéfinis
-          </p>
+          <h2 className="text-3xl font-bold">Workflows</h2>
+          <p className="text-muted-foreground">Automatisez vos communications et processus</p>
         </div>
-        <Button 
-          onClick={() => setIsCreateDialogOpen(true)}
-          className="bg-gradient-primary w-full sm:w-auto"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Créer un workflow
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setShowAnalytics(!showAnalytics)}>
+            <BarChart3 className="h-4 w-4 mr-2" />
+            {showAnalytics ? "Masquer" : "Analytics"}
+          </Button>
+          <Dialog open={showNewWorkflow} onOpenChange={setShowNewWorkflow}>
+            <DialogTrigger asChild>
+              <Button><Plus className="h-4 w-4 mr-2" />Nouveau Workflow</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>Créer un Workflow</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div><Label>Nom du workflow</Label><Input value={newWorkflow.name} onChange={(e) => setNewWorkflow({ ...newWorkflow, name: e.target.value })} placeholder="Ex: Séquence d'invitation complète" /></div>
+                <div><Label>Description</Label><Textarea value={newWorkflow.description} onChange={(e) => setNewWorkflow({ ...newWorkflow, description: e.target.value })} placeholder="Décrivez l'objectif de ce workflow" rows={3} /></div>
+                <div><Label>Type de déclencheur</Label><Select value={newWorkflow.trigger_type} onValueChange={(value: any) => setNewWorkflow({ ...newWorkflow, trigger_type: value })}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="manual">Manuel</SelectItem><SelectItem value="scheduled">Planifié</SelectItem><SelectItem value="conditional">Conditionnel</SelectItem></SelectContent></Select></div>
+                {newWorkflow.trigger_type === "conditional" && (<WorkflowConditionsEditor conditions={newWorkflow.conditions} onChange={(conditions) => setNewWorkflow({ ...newWorkflow, conditions })} />)}
+                <WorkflowVisualEditor actions={newWorkflow.actions} onChange={(actions) => setNewWorkflow({ ...newWorkflow, actions })} eventId={eventId} />
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShowNewWorkflow(false)}>Annuler</Button>
+                <Button onClick={handleCreateWorkflow} disabled={!newWorkflow.name || newWorkflow.actions.length === 0}>Créer le Workflow</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      {/* Templates and Workflows Tabs */}
-      <Tabs defaultValue="templates" className="w-full">
-        <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="templates" className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4" />
-            Templates
-          </TabsTrigger>
-          <TabsTrigger value="workflows" className="flex items-center gap-2">
-            <List className="w-4 h-4" />
-            Mes Workflows
-          </TabsTrigger>
+      {showAnalytics && workflows && <WorkflowAnalytics workflows={workflows} />}
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="templates"><Sparkles className="h-4 w-4 mr-2" />Templates</TabsTrigger>
+          <TabsTrigger value="workflows"><Zap className="h-4 w-4 mr-2" />Mes Workflows ({workflows?.length || 0})</TabsTrigger>
         </TabsList>
 
-        {/* Templates Tab */}
-        <TabsContent value="templates" className="space-y-6 mt-6">
-          {/* Category Filter */}
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <Button
-                key={category.value}
-                variant={selectedCategory === category.value ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category.value as any)}
-                className={selectedCategory === category.value ? "bg-gradient-primary" : ""}
-              >
-                {category.label}
-              </Button>
+        <TabsContent value="templates" className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <div className="flex gap-2">{categories.map((cat) => (<Button key={cat.value} size="sm" variant={selectedCategory === cat.value ? "default" : "outline"} onClick={() => setSelectedCategory(cat.value)}>{cat.label}</Button>))}</div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredTemplates.map((template) => (
+              <Card key={template.id} className="hover:shadow-lg transition-shadow">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">{template.icon}<CardTitle className="text-base">{template.name}</CardTitle></div>
+                    <Badge variant="secondary">{template.category}</Badge>
+                  </div>
+                  <CardDescription className="text-sm">{template.description}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 mb-4"><div className="flex items-center gap-2 text-xs text-muted-foreground"><Clock className="h-3 w-3" /><span>{template.actions.length} actions</span></div></div>
+                  <Button className="w-full" size="sm" onClick={() => handleApplyTemplate(template)}>Utiliser ce template</Button>
+                </CardContent>
+              </Card>
             ))}
           </div>
-
-          {/* Templates Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredTemplates.map((template) => {
-              const IconComponent = template.icon;
-              return (
-                <Card 
-                  key={template.id} 
-                  className="shadow-elegant hover:shadow-glow transition-smooth cursor-pointer group"
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className={`w-12 h-12 rounded-xl ${template.color} flex items-center justify-center flex-shrink-0`}>
-                        <IconComponent className="w-6 h-6 text-white" />
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {categories.find(c => c.value === template.category)?.label}
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-lg mt-3">{template.name}</CardTitle>
-                    <CardDescription className="text-sm line-clamp-2">
-                      {template.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Zap className="w-3.5 h-3.5" />
-                      <span>{template.actions.length} actions</span>
-                    </div>
-                    <Button 
-                      onClick={() => handleApplyTemplate(template)}
-                      className="w-full bg-gradient-primary group-hover:opacity-90"
-                      size="sm"
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Utiliser ce template
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
         </TabsContent>
 
-        {/* Workflows Tab */}
-        <TabsContent value="workflows" className="space-y-4 mt-6">
-
-      <div className="grid gap-4">
-        {isLoading ? (
-          <Card className="shadow-elegant">
-            <CardContent className="p-12 text-center">
-              <div className="animate-spin w-8 h-8 border-4 border-accent border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Chargement des workflows...</p>
-            </CardContent>
-          </Card>
-        ) : workflows.length === 0 ? (
-          <Card className="shadow-elegant">
-            <CardContent className="p-12 text-center">
-              <Zap className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Aucun workflow configuré</h3>
-              <p className="text-muted-foreground mb-4">
-                Créez votre premier workflow pour automatiser vos communications
-              </p>
-              <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-gradient-primary">
-                <Plus className="w-4 h-4 mr-2" />
-                Créer un workflow
-              </Button>
-            </CardContent>
-          </Card>
-        ) : workflows.map((workflow) => (
-          <Card key={workflow.id} className="shadow-elegant border-l-4 border-l-accent hover:shadow-glow transition-smooth">
-            <CardHeader className="pb-4">
-              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-                <div className="space-y-3 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <CardTitle className="text-xl">{workflow.name}</CardTitle>
-                    <Badge className={getStatusColor(workflow.status)}>
-                      {workflow.status === 'active' ? '🟢 Actif' : 
-                       workflow.status === 'paused' ? '🟡 En pause' : '⚫ Terminé'}
-                    </Badge>
-                  </div>
-                  <CardDescription className="text-sm">{workflow.description}</CardDescription>
-                  <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded-lg">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{triggerTypes.find(t => t.value === workflow.trigger_type)?.label}</span>
+        <TabsContent value="workflows" className="space-y-4">
+          {workflows.length === 0 ? (
+            <Card><CardContent className="p-12 text-center"><Zap className="h-12 w-12 mx-auto mb-4 text-muted-foreground" /><h3 className="text-lg font-semibold mb-2">Aucun workflow créé</h3><p className="text-muted-foreground mb-4">Commencez par créer un workflow ou utilisez un template</p></CardContent></Card>
+          ) : (
+            <div className="grid grid-cols-1 gap-4">
+              {workflows.map((workflow) => (
+                <Card key={workflow.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2"><CardTitle className="text-lg">{workflow.name}</CardTitle><Badge variant={workflow.status === "active" ? "default" : workflow.status === "paused" ? "secondary" : "outline"}>{workflow.status}</Badge></div>
+                        {workflow.description && <CardDescription>{workflow.description}</CardDescription>}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => executeWorkflow.mutate({ workflowId: workflow.id, eventId })} disabled={executeWorkflow.isPending} title="Exécuter"><Play className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => toggleWorkflow.mutate({ id: workflow.id, eventId, currentStatus: workflow.status })} title={workflow.status === "active" ? "Mettre en pause" : "Activer"}>{workflow.status === "active" ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDuplicateWorkflow(workflow)} title="Dupliquer"><Copy className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => deleteWorkflow.mutate({ id: workflow.id, eventId })} title="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded-lg">
-                      <Zap className="w-3.5 h-3.5" />
-                      <span>{workflow.execution_count} exécutions</span>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div><div className="text-muted-foreground">Type</div><div className="font-medium capitalize">{workflow.trigger_type}</div></div>
+                      <div><div className="text-muted-foreground">Actions</div><div className="font-medium">{workflow.actions.length}</div></div>
+                      <div><div className="text-muted-foreground">Exécutions</div><div className="font-medium">{workflow.execution_count || 0}</div></div>
+                      <div><div className="text-muted-foreground">Dernière exécution</div><div className="font-medium">{workflow.last_executed_at ? format(new Date(workflow.last_executed_at), "dd/MM/yyyy", { locale: fr }) : "Jamais"}</div></div>
                     </div>
-                    {workflow.last_executed_at && (
-                      <div className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded-lg">
-                        <Clock className="w-3.5 h-3.5" />
-                        <span>{new Date(workflow.last_executed_at).toLocaleDateString('fr-FR')}</span>
+                    {workflow.actions.length > 0 && (
+                      <div className="mt-4 pt-4 border-t">
+                        <div className="text-sm text-muted-foreground mb-2">Aperçu des actions:</div>
+                        <div className="flex flex-wrap gap-2">
+                          {workflow.actions.map((action, index) => (
+                            <Badge key={action.id} variant="outline" className="gap-1">{index + 1}.{action.type === "email" && <Mail className="h-3 w-3" />}{action.type === "sms" && <MessageSquare className="h-3 w-3" />}{action.type === "whatsapp" && <MessageSquare className="h-3 w-3" />}{action.type === "telegram" && <MessageSquare className="h-3 w-3" />}{action.type === "delay" && <Clock className="h-3 w-3" />}<span className="capitalize">{action.type}</span></Badge>
+                          ))}
+                        </div>
                       </div>
                     )}
-                  </div>
-                </div>
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleToggleWorkflow(workflow.id, workflow.status)}
-                    className="hover:bg-accent/10"
-                  >
-                    {workflow.status === 'active' ? 
-                      <><Pause className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Pause</span></> :
-                      <><Play className="w-4 h-4 sm:mr-1" /> <span className="hidden sm:inline">Activer</span></>
-                    }
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleExecuteWorkflow(workflow.id)}
-                    disabled={workflow.status !== 'active'}
-                    className="bg-gradient-primary text-white border-none hover:opacity-90 disabled:opacity-50"
-                  >
-                    <Play className="w-4 h-4 sm:mr-1" />
-                    <span className="hidden sm:inline">Exécuter</span>
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="hover:bg-accent/10"
-                    onClick={() => setEditingWorkflow(workflow)}
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="hover:bg-destructive/10 hover:text-destructive"
-                    onClick={() => handleDeleteWorkflow(workflow.id)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Zap className="w-4 h-4 text-accent" />
-                  <span>Séquence d'actions:</span>
-                </div>
-                <div className="flex items-center gap-2 overflow-x-auto pb-3">
-                  {workflow.actions.map((action, index) => {
-                    const IconComponent = getActionIcon(action.type);
-                    return (
-                      <div key={action.id} className="flex items-center gap-2 min-w-fit">
-                        <div className="flex items-center gap-2.5 bg-card border-2 border-accent/20 px-4 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-smooth">
-                          <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
-                            <IconComponent className="w-4 h-4 text-accent" />
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-semibold">
-                              {actionTypes.find(at => at.value === action.type)?.label}
-                            </span>
-                            {action.config.delay && (
-                              <span className="text-xs text-muted-foreground">
-                                {action.config.delay.value} {action.config.delay.unit}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        {index < workflow.actions.length - 1 && (
-                          <div className="text-accent font-bold text-lg">→</div>
-                        )}
-                  </div>
-                );
-              })}
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </div>
-        </CardContent>
-      </Card>
-        ))}
-      </div>
+          )}
         </TabsContent>
       </Tabs>
-
-      {/* Create Workflow Dialog */}
-      {isCreateDialogOpen && (
-        <Card className="shadow-glow border-2 border-accent/30">
-          <CardHeader className="bg-gradient-subtle">
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="w-5 h-5 text-accent" />
-              Créer un nouveau workflow
-            </CardTitle>
-            <CardDescription>
-              Configurez une séquence d'actions automatisées pour votre événement
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6 mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="workflow-name">Nom du workflow</Label>
-                <Input
-                  id="workflow-name"
-                  placeholder="ex: Séquence d'invitation"
-                  value={newWorkflow.name}
-                  onChange={(e) => setNewWorkflow(prev => ({ ...prev, name: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="trigger-type">Type de déclencheur</Label>
-                <Select 
-                  value={newWorkflow.trigger_type} 
-                  onValueChange={(value: any) => setNewWorkflow(prev => ({ ...prev, trigger_type: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {triggerTypes.map((type) => (
-                      <SelectItem key={type.value} value={type.value}>
-                        <div>
-                          <div className="font-medium">{type.label}</div>
-                          <div className="text-xs text-muted-foreground">{type.description}</div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="workflow-description">Description</Label>
-              <Textarea
-                id="workflow-description"
-                placeholder="Décrivez ce que fait ce workflow..."
-                value={newWorkflow.description}
-                onChange={(e) => setNewWorkflow(prev => ({ ...prev, description: e.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label>Actions du workflow</Label>
-                <Select onValueChange={addActionToWorkflow}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Ajouter une action" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {actionTypes.map((type) => {
-                      const IconComponent = type.icon;
-                      return (
-                        <SelectItem key={type.value} value={type.value}>
-                          <div className="flex items-center gap-2">
-                            <IconComponent className="w-4 h-4" />
-                            <div>
-                              <div className="font-medium">{type.label}</div>
-                              <div className="text-xs text-muted-foreground">{type.description}</div>
-                            </div>
-                          </div>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {newWorkflow.actions.length > 0 && (
-                <div className="space-y-2">
-                  {newWorkflow.actions.map((action, index) => {
-                    const IconComponent = getActionIcon(action.type);
-                    return (
-                      <div key={action.id} className="flex items-center gap-2 p-3 bg-muted rounded-lg">
-                        <IconComponent className="w-4 h-4" />
-                        <span className="flex-1">
-                          {actionTypes.find(at => at.value === action.type)?.label}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeActionFromWorkflow(action.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setIsCreateDialogOpen(false)}
-              >
-                Annuler
-              </Button>
-              <Button 
-                onClick={handleCreateWorkflow}
-                className="bg-gradient-primary"
-                disabled={!newWorkflow.name || newWorkflow.actions.length === 0}
-              >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Créer le workflow
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };
