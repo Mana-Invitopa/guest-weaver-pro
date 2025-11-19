@@ -44,6 +44,9 @@ const Navbar = () => {
           <Link to="/events" className="text-foreground hover:text-accent transition-colors">
             Événements Publics
           </Link>
+          <Link to="/support" className="text-foreground hover:text-accent transition-colors">
+            Support
+          </Link>
           <Link to="#features" className="text-foreground hover:text-accent transition-colors">
             Fonctionnalités
           </Link>
