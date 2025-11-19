@@ -11,6 +11,7 @@ import { UserPlus, Mail, MessageSquare, CheckCircle, XCircle, Users, Search, Dow
 import { useToast } from "@/hooks/use-toast";
 import { useInvitees, useCreateInvitee, type Invitee } from "@/hooks/useInvitees";
 import InvitationSender from "./InvitationSender";
+import PDFInvitationSender from "./PDFInvitationSender";
 
 interface GuestManagementProps {
   eventId: string;
@@ -243,9 +244,10 @@ const GuestManagement = ({ eventId }: GuestManagementProps) => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="list" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="list">Liste des Invités</TabsTrigger>
-              <TabsTrigger value="send">Envoyer Invitations</TabsTrigger>
+              <TabsTrigger value="send">Invitations Standard</TabsTrigger>
+              <TabsTrigger value="pdf">Invitations PDF</TabsTrigger>
             </TabsList>
             
             <TabsContent value="list" className="space-y-4">
@@ -296,6 +298,10 @@ const GuestManagement = ({ eventId }: GuestManagementProps) => {
 
             <TabsContent value="send">
               <InvitationSender eventId={eventId} invitees={invitees} />
+            </TabsContent>
+
+            <TabsContent value="pdf">
+              <PDFInvitationSender eventId={eventId} invitees={invitees} />
             </TabsContent>
           </Tabs>
         </CardContent>

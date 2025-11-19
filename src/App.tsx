@@ -23,6 +23,7 @@ import WorkflowsPage from "./pages/WorkflowsPage";
 import SchedulerPage from "./pages/SchedulerPage";
 import ContentManagement from "./pages/ContentManagement";
 import Documentation from "./pages/Documentation";
+import Support from "./pages/Support";
 import PulseMonitor from "./components/PulseMonitor";
 import "./App.css";
 
@@ -266,6 +267,9 @@ const App = () => (
             {/* Public Events Routes */}
             <Route path="/events" element={<PublicEvents />} />
             <Route path="/event/:eventId" element={<PublicEventDetailPage />} />
+            
+            {/* Support */}
+            <Route path="/support" element={<Support />} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -15,9 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  Plus, Play, Pause, Trash2, Clock, Zap, Mail, MessageSquare, Sparkles, Filter, Copy, BarChart3,
-} from "lucide-react";
+import { Mail, Send, Clock, MessageSquare, Phone, Zap, Plus, Play, Pause, Trash2, Copy, BarChart3, Filter, Grid3x3, Download, Upload, Sparkles } from "lucide-react";
 import {
   useEventWorkflows, useCreateWorkflow, useUpdateWorkflow, useDeleteWorkflow,
   useToggleWorkflow, WorkflowAction, EventWorkflow,
@@ -82,6 +80,58 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
     setShowNewWorkflow(true);
   };
 
+  const handleExportWorkflow = (workflow: EventWorkflow) => {
+    const exportData = {
+      name: workflow.name,
+      description: workflow.description,
+      trigger_type: workflow.trigger_type,
+      trigger_conditions: workflow.trigger_conditions,
+      actions: workflow.actions,
+      status: workflow.status,
+    };
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `workflow-${workflow.name.toLowerCase().replace(/\s+/g, '-')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportWorkflow = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      
+      try {
+        const text = await file.text();
+        const importedWorkflow = JSON.parse(text);
+        
+        setNewWorkflow({
+          name: importedWorkflow.name + ' (importé)',
+          description: importedWorkflow.description || '',
+          trigger_type: importedWorkflow.trigger_type || 'manual',
+          actions: importedWorkflow.actions || [],
+          conditions: (importedWorkflow.trigger_conditions as any)?.conditions || []
+        });
+        
+        setActiveTab('workflows');
+        setShowNewWorkflow(true);
+      } catch (error) {
+        console.error('Import error:', error);
+      }
+    };
+    
+    input.click();
+  };
+
   const filteredTemplates = selectedCategory === "all" ? workflowTemplates : workflowTemplates.filter((t) => t.category === selectedCategory);
   const categories = [
     { value: "all", label: "Tous" }, { value: "invitation", label: "Invitations" },
@@ -98,6 +148,10 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
           <p className="text-muted-foreground">Automatisez vos communications et processus</p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={handleImportWorkflow}>
+            <Upload className="h-4 w-4 mr-2" />
+            Importer
+          </Button>
           <Button variant="outline" onClick={() => setShowAnalytics(!showAnalytics)}>
             <BarChart3 className="h-4 w-4 mr-2" />
             {showAnalytics ? "Masquer" : "Analytics"}
@@ -173,6 +227,7 @@ const EventWorkflowManager = ({ eventId }: EventWorkflowManagerProps) => {
                         <Button variant="ghost" size="icon" onClick={() => executeWorkflow.mutate({ workflowId: workflow.id, eventId })} disabled={executeWorkflow.isPending} title="Exécuter"><Play className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => toggleWorkflow.mutate({ id: workflow.id, eventId, currentStatus: workflow.status })} title={workflow.status === "active" ? "Mettre en pause" : "Activer"}>{workflow.status === "active" ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}</Button>
                         <Button variant="ghost" size="icon" onClick={() => handleDuplicateWorkflow(workflow)} title="Dupliquer"><Copy className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleExportWorkflow(workflow)} title="Exporter"><Download className="h-4 w-4" /></Button>
                         <Button variant="ghost" size="icon" onClick={() => deleteWorkflow.mutate({ id: workflow.id, eventId })} title="Supprimer"><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </div>
                     </div>
