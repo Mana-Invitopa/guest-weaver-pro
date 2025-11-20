@@ -30,6 +30,7 @@ import { format, isPast } from "date-fns";
 import { fr } from "date-fns/locale";
 import { usePublicEvent } from "@/hooks/usePublicEvents";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const PublicEventDetailView = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -83,16 +84,89 @@ const PublicEventDetailView = () => {
 
     setIsSubmitting(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      // Create invitee
+      const { data: inviteeData, error: inviteeError } = await supabase
+        .from('invitees')
+        .insert({
+          event_id: eventId!,
+          name: rsvpForm.name,
+          email: rsvpForm.email,
+          phone: rsvpForm.phone || null,
+          token: crypto.randomUUID(),
+        })
+        .select()
+        .single();
+
+      if (inviteeError) throw inviteeError;
+
+      // Create RSVP
+      const { error: rsvpError } = await supabase
+        .from('rsvps')
+        .insert({
+          event_id: eventId!,
+          invitee_id: inviteeData.id,
+          status: status,
+          guest_count: rsvpForm.guest_count,
+          dietary_restrictions: rsvpForm.dietary_restrictions || null,
+          responded_at: new Date().toISOString(),
+        });
+
+      if (rsvpError) throw rsvpError;
+
       setRsvpStatus(status);
-      toast.success(
-        status === 'confirmed' 
-          ? 'Votre participation a été confirmée !' 
-          : 'Votre réponse a été enregistrée'
-      );
+
+      // If confirmed, generate and send PDF invitation
+      if (status === 'confirmed') {
+        try {
+          // Generate PDF
+          const { data: pdfData, error: pdfError } = await supabase.functions.invoke(
+            'generate-invitation-pdf',
+            {
+              body: {
+                eventId: eventId!,
+                inviteeId: inviteeData.id,
+                inviteeName: rsvpForm.name,
+                inviteeTable: inviteeData.table_name,
+                invitationImageUrl: event?.background_image_url,
+              },
+            }
+          );
+
+          if (pdfError) {
+            console.error('PDF generation error:', pdfError);
+            toast.warning('Votre participation a été confirmée, mais l\'envoi de l\'invitation PDF a échoué.');
+            return;
+          }
+
+          // Send invitation email with PDF
+          const invitationUrl = `${window.location.origin}/invitation/${inviteeData.token}`;
+          const { error: emailError } = await supabase.functions.invoke('send-invitation', {
+            body: {
+              to: rsvpForm.email,
+              subject: `Confirmation - ${event?.title}`,
+              message: `Merci d'avoir confirmé votre présence à ${event?.title}. Vous trouverez ci-joint votre invitation personnalisée en PDF.`,
+              invitationUrl,
+              eventTitle: event?.title,
+              guestName: rsvpForm.name,
+              pdfHtml: pdfData.html,
+            },
+          });
+
+          if (emailError) {
+            console.error('Email error:', emailError);
+            toast.warning('Votre participation a été confirmée, mais l\'envoi de l\'email a échoué.');
+          } else {
+            toast.success('Votre participation a été confirmée ! Un email avec votre invitation PDF vous a été envoyé.');
+          }
+        } catch (error) {
+          console.error('Error sending invitation:', error);
+          toast.warning('Votre participation a été confirmée, mais l\'envoi de l\'invitation a échoué.');
+        }
+      } else {
+        toast.success('Votre réponse a été enregistrée');
+      }
     } catch (error) {
+      console.error('RSVP error:', error);
       toast.error('Erreur lors de l\'enregistrement de votre réponse');
     } finally {
       setIsSubmitting(false);

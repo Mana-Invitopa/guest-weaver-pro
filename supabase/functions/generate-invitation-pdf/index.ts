@@ -47,8 +47,15 @@ serve(async (req) => {
 
     if (programError) throw programError;
 
+    // Fetch invitee for QR code
+    const { data: invitee } = await supabase
+      .from('invitees')
+      .select('qr_code_data, token')
+      .eq('id', inviteeId)
+      .single();
+
     // Generate HTML content for PDF
-    const htmlContent = generateInvitationHTML(event, inviteeName, inviteeTable, programs, invitationImageUrl);
+    const htmlContent = generateInvitationHTML(event, inviteeName, inviteeTable, programs, invitationImageUrl, invitee?.qr_code_data || invitee?.token);
 
     // Note: For actual PDF generation, you would use a library like jsPDF or puppeteer
     // For now, we return the HTML that can be converted to PDF on the client side
@@ -84,7 +91,8 @@ function generateInvitationHTML(
   inviteeName: string,
   inviteeTable: string | undefined,
   programs: any[],
-  invitationImageUrl?: string
+  invitationImageUrl?: string,
+  qrCodeData?: string
 ): string {
   const eventDate = new Date(event.date_time).toLocaleDateString('fr-FR', {
     weekday: 'long',
@@ -280,6 +288,73 @@ function generateInvitationHTML(
           font-size: 20px;
           margin-top: 100px;
         }
+        
+        /* Page 4 - QR Code and Guest Info */
+        .page-4 {
+          background: white;
+          padding: 60px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+        }
+        .qr-title {
+          font-size: 36px;
+          color: #1a1f36;
+          margin-bottom: 30px;
+          text-align: center;
+        }
+        .qr-container {
+          background: white;
+          padding: 30px;
+          border-radius: 20px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+          margin-bottom: 40px;
+          text-align: center;
+        }
+        .qr-code {
+          width: 300px;
+          height: 300px;
+          background: #f8f9fa;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 3px solid #667eea;
+          border-radius: 10px;
+          margin: 0 auto;
+        }
+        .guest-info-card {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 40px;
+          border-radius: 15px;
+          width: 100%;
+          max-width: 500px;
+          box-shadow: 0 10px 40px rgba(102, 126, 234, 0.3);
+        }
+        .guest-info-title {
+          font-size: 28px;
+          font-weight: bold;
+          margin-bottom: 25px;
+          text-align: center;
+          border-bottom: 2px solid rgba(255,255,255,0.3);
+          padding-bottom: 15px;
+        }
+        .guest-detail {
+          font-size: 18px;
+          margin: 15px 0;
+          padding: 10px 0;
+          display: flex;
+          justify-content: space-between;
+          border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        .guest-detail-label {
+          font-weight: 600;
+          opacity: 0.9;
+        }
+        .guest-detail-value {
+          font-weight: 400;
+        }
       </style>
     </head>
     <body>
@@ -342,6 +417,43 @@ function generateInvitationHTML(
           </div>
           `;
         }).join('') : '<div class="no-program">Programme à venir...</div>'}
+      </div>
+      
+      <!-- Page 4: QR Code & Guest Information -->
+      <div class="page page-4">
+        <div class="qr-title">Votre Invitation Personnalisée</div>
+        <div class="qr-container">
+          ${qrCodeData ? `
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrCodeData)}" alt="QR Code" class="qr-code">
+          ` : '<div class="qr-code"><span style="color: #999;">QR Code</span></div>'}
+          <p style="margin-top: 20px; color: #666; font-size: 14px;">Présentez ce code à l'entrée</p>
+        </div>
+        
+        <div class="guest-info-card">
+          <div class="guest-info-title">Informations de l'invité</div>
+          <div class="guest-detail">
+            <span class="guest-detail-label">Nom:</span>
+            <span class="guest-detail-value">${inviteeName}</span>
+          </div>
+          ${inviteeTable ? `
+          <div class="guest-detail">
+            <span class="guest-detail-label">Table:</span>
+            <span class="guest-detail-value">${inviteeTable}</span>
+          </div>
+          ` : ''}
+          <div class="guest-detail">
+            <span class="guest-detail-label">Événement:</span>
+            <span class="guest-detail-value">${event.title}</span>
+          </div>
+          <div class="guest-detail">
+            <span class="guest-detail-label">Date:</span>
+            <span class="guest-detail-value">${eventDate}</span>
+          </div>
+          <div class="guest-detail">
+            <span class="guest-detail-label">Heure:</span>
+            <span class="guest-detail-value">${eventTime}</span>
+          </div>
+        </div>
       </div>
     </body>
     </html>
