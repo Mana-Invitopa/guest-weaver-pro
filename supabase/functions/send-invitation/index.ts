@@ -15,6 +15,7 @@ interface InvitationEmailRequest {
   invitationUrl: string;
   eventTitle: string;
   guestName: string;
+  pdfHtml?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -24,11 +25,11 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { to, subject, message, invitationUrl, eventTitle, guestName }: InvitationEmailRequest = await req.json();
+    const { to, subject, message, invitationUrl, eventTitle, guestName, pdfHtml }: InvitationEmailRequest = await req.json();
 
     const customMessage = message || `Vous êtes cordialement invité(e) à ${eventTitle}. Cliquez sur le lien ci-dessous pour confirmer votre présence.`;
 
-    const emailResponse = await resend.emails.send({
+    const emailData: any = {
       from: "Invitation <onboarding@resend.dev>",
       to: [to],
       subject: subject,
@@ -44,6 +45,14 @@ const handler = async (req: Request): Promise<Response> => {
             <p style="color: #666; font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
               ${customMessage}
             </p>
+            
+            ${pdfHtml ? `
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+              <p style="color: #666; font-size: 14px; margin: 0 0 10px 0;">
+                📎 Votre invitation personnalisée en PDF est jointe à ce message
+              </p>
+            </div>
+            ` : ''}
             
             <div style="text-align: center; margin: 30px 0;">
               <a href="${invitationUrl}" style="
@@ -81,7 +90,19 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         </div>
       `,
-    });
+    };
+
+    // Add PDF as attachment if provided
+    if (pdfHtml) {
+      emailData.attachments = [
+        {
+          filename: 'invitation.html',
+          content: pdfHtml,
+        }
+      ];
+    }
+
+    const emailResponse = await resend.emails.send(emailData);
 
     console.log("Invitation email sent successfully:", emailResponse);
 
