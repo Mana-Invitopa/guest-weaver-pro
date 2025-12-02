@@ -18,8 +18,11 @@ import InviteesDashboard from "@/components/InviteesDashboard";
 import AnalyticsDashboard from "@/components/AnalyticsDashboard";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useAllEventsRSVPRealtime } from "@/hooks/useRSVPRealtime";
 
 const AdminDashboard = () => {
+  // Enable real-time RSVP notifications
+  useAllEventsRSVPRealtime();
   const { eventId } = useParams();
   const { user } = useAuth();
   const { data: events, isLoading: eventsLoading } = useEvents();

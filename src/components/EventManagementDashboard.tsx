@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Users, QrCode, UserCheck, Table, Mail, FileText, Settings, Eye, Share, ClipboardList } from "lucide-react";
 import { useEvent } from "@/hooks/useEvents";
 import { useInvitees } from "@/hooks/useInvitees";
+import { useRSVPRealtime } from "@/hooks/useRSVPRealtime";
 import EventEditor from "./EventEditor";
 import GuestManagement from "./GuestManagement";
 import QRCodeGenerator from "./QRCodeGenerator";
@@ -22,6 +23,9 @@ import CollaboratorManagement from "./CollaboratorManagement";
 const EventManagementDashboard = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const location = useLocation();
+  
+  // Enable real-time RSVP notifications for this event
+  useRSVPRealtime(eventId);
   
   if (!eventId) {
     return <div>Événement non trouvé</div>;

@@ -31,6 +31,7 @@ import { fr } from "date-fns/locale";
 import { usePublicEvent } from "@/hooks/usePublicEvents";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import InvitationDownloadPage from "./InvitationDownloadPage";
 
 const PublicEventDetailView = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -47,6 +48,15 @@ const PublicEventDetailView = () => {
   
   const [rsvpStatus, setRsvpStatus] = useState<'pending' | 'confirmed' | 'declined' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDownloadPage, setShowDownloadPage] = useState(false);
+  const [confirmedInvitee, setConfirmedInvitee] = useState<{
+    id: string;
+    name: string;
+    email: string;
+    token: string;
+    table_name?: string | null;
+  } | null>(null);
+  const [pdfHtml, setPdfHtml] = useState<string | null>(null);
 
   const getEventTypeIcon = (eventType: string) => {
     const icons: Record<string, React.ComponentType<any>> = {
@@ -115,7 +125,7 @@ const PublicEventDetailView = () => {
 
       setRsvpStatus(status);
 
-      // If confirmed, generate and send PDF invitation
+      // If confirmed, generate PDF and show download page
       if (status === 'confirmed') {
         try {
           // Generate PDF
@@ -132,15 +142,22 @@ const PublicEventDetailView = () => {
             }
           );
 
-          if (pdfError) {
-            console.error('PDF generation error:', pdfError);
-            toast.warning('Votre participation a été confirmée, mais l\'envoi de l\'invitation PDF a échoué.');
-            return;
+          // Store invitee data and PDF for download page
+          setConfirmedInvitee({
+            id: inviteeData.id,
+            name: rsvpForm.name,
+            email: rsvpForm.email,
+            token: inviteeData.token,
+            table_name: inviteeData.table_name,
+          });
+
+          if (!pdfError && pdfData?.html) {
+            setPdfHtml(pdfData.html);
           }
 
-          // Send invitation email with PDF
+          // Send invitation email with PDF in background
           const invitationUrl = `${window.location.origin}/invitation/${inviteeData.token}`;
-          const { error: emailError } = await supabase.functions.invoke('send-invitation', {
+          supabase.functions.invoke('send-invitation', {
             body: {
               to: rsvpForm.email,
               subject: `Confirmation - ${event?.title}`,
@@ -148,19 +165,23 @@ const PublicEventDetailView = () => {
               invitationUrl,
               eventTitle: event?.title,
               guestName: rsvpForm.name,
-              pdfHtml: pdfData.html,
+              pdfHtml: pdfData?.html,
             },
-          });
+          }).catch(console.error);
 
-          if (emailError) {
-            console.error('Email error:', emailError);
-            toast.warning('Votre participation a été confirmée, mais l\'envoi de l\'email a échoué.');
-          } else {
-            toast.success('Votre participation a été confirmée ! Un email avec votre invitation PDF vous a été envoyé.');
-          }
+          // Show beautiful download page
+          setShowDownloadPage(true);
         } catch (error) {
-          console.error('Error sending invitation:', error);
-          toast.warning('Votre participation a été confirmée, mais l\'envoi de l\'invitation a échoué.');
+          console.error('Error generating invitation:', error);
+          // Still show download page even if PDF generation failed
+          setConfirmedInvitee({
+            id: inviteeData.id,
+            name: rsvpForm.name,
+            email: rsvpForm.email,
+            token: inviteeData.token,
+            table_name: inviteeData.table_name,
+          });
+          setShowDownloadPage(true);
         }
       } else {
         toast.success('Votre réponse a été enregistrée');
@@ -235,6 +256,26 @@ const PublicEventDetailView = () => {
           </CardContent>
         </Card>
       </div>
+    );
+  }
+
+  // Show beautiful download page after confirmation
+  if (showDownloadPage && confirmedInvitee && event) {
+    return (
+      <InvitationDownloadPage
+        event={{
+          id: event.id!,
+          title: event.title!,
+          date_time: event.date_time!,
+          location: event.location!,
+          background_image_url: event.background_image_url,
+          event_type: event.event_type,
+          description: event.description,
+        }}
+        invitee={confirmedInvitee}
+        pdfHtml={pdfHtml || undefined}
+        onClose={() => setShowDownloadPage(false)}
+      />
     );
   }
 
