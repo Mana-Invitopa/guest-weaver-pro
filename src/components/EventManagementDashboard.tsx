@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, Users, QrCode, UserCheck, Table, Mail, FileText, Settings, Eye, Share, ClipboardList } from "lucide-react";
+import { Calendar, Users, QrCode, UserCheck, Table, Mail, FileText, Settings, Eye, Share, ClipboardList, Bell } from "lucide-react";
 import { useEvent } from "@/hooks/useEvents";
 import { useInvitees } from "@/hooks/useInvitees";
 import { useRSVPRealtime } from "@/hooks/useRSVPRealtime";
@@ -19,6 +19,7 @@ import EnhancedThemeSelector from "./EnhancedThemeSelector";
 import DrinkPreferencesManager from "./DrinkPreferencesManager";
 import EventProgramManager from "./EventProgramManager";
 import CollaboratorManagement from "./CollaboratorManagement";
+import SmartRemindersPanel from "./SmartRemindersPanel";
 
 const EventManagementDashboard = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -53,6 +54,7 @@ const EventManagementDashboard = () => {
     if (path.includes('/share')) return 'share';
     if (path.includes('/guestbook')) return 'guestbook';
     if (path.includes('/program')) return 'program';
+    if (path.includes('/reminders')) return 'reminders';
     if (path.includes('/settings')) return 'settings';
     return 'overview';
   };
@@ -124,7 +126,7 @@ const EventManagementDashboard = () => {
 
       {/* Management Tabs */}
       <Tabs value={getActiveTab()} className="space-y-4">
-        <TabsList className="grid grid-cols-5 lg:grid-cols-10 w-full">
+        <TabsList className="grid grid-cols-5 lg:grid-cols-11 w-full">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             Vue d'ensemble
@@ -160,6 +162,10 @@ const EventManagementDashboard = () => {
           <TabsTrigger value="guestbook" className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
             Livre d'Or
+          </TabsTrigger>
+          <TabsTrigger value="reminders" className="flex items-center gap-2">
+            <Bell className="w-4 h-4" />
+            Rappels
           </TabsTrigger>
           <TabsTrigger value="settings" className="flex items-center gap-2">
             <Settings className="w-4 h-4" />
@@ -256,6 +262,10 @@ const EventManagementDashboard = () => {
 
         <TabsContent value="guestbook">
           <GuestbookManagement eventId={eventId} />
+        </TabsContent>
+
+        <TabsContent value="reminders">
+          <SmartRemindersPanel eventId={eventId} />
         </TabsContent>
 
         <TabsContent value="settings">
